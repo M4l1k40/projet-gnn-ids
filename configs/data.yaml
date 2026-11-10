@@ -1,0 +1,15 @@
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+
+split:
+  train: 0.60
+  validation: 0.15
+  test: 0.25
+  gap_minutes: 5
+
+seeds:
+  split: 42
+  model: 42
+  global: 42

@@ -1,0 +1,15 @@
+pandas
+numpy
+pyarrow
+scikit-learn
+xgboost
+shap
+scipy
+pyyaml
+pytest
+joblib
+torch
+torch-geometric
+networkx
+streamlit
+plotly
