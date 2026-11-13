@@ -3,15 +3,20 @@
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 import yaml
 
+from src.data.schema import validate_schema
 from src.utils.config import load_config
 
 _JOURS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+_ROW_GROUP_SIZE = 50_000
 
 
 @dataclass(frozen=True)
@@ -222,9 +227,18 @@ def correct_start_times(
 def add_ts_end(
     frame: pd.DataFrame,
     config: dict[str, Any] | None = None,
+    *,
+    corrected_starts: pd.Series | None = None,
+    afficher_resultats: bool = True,
 ) -> tuple[pd.Series, TimestampDiagnostics]:
     """Ajoute ts_end en secondes epoch, sans supprimer ni modifier les durées."""
-    starts = correct_start_times(frame, config)
+    starts = (
+        correct_start_times(frame, config, afficher_resultats=afficher_resultats)
+        if corrected_starts is None
+        else corrected_starts
+    )
+    if len(frame) != len(starts) or not frame.index.equals(starts.index):
+        raise ValueError("Les horodatages corrigés doivent aligner les lignes du DataFrame.")
     if "Flow Duration" not in frame.columns:
         raise ValueError("Colonne requise absente : Flow Duration.")
     durations = pd.to_numeric(frame["Flow Duration"], errors="coerce").to_numpy(
@@ -249,3 +263,474 @@ def add_ts_end(
         weekday_mismatches=0,
         nonpositive_durations=nonpositive_by_day,
     )
+
+
+def _allocate_stratified_quotas(
+    stratum_counts: Counter[tuple[str, str]], sample_size: int
+) -> dict[tuple[str, str], int]:
+    groups = {key: int(count) for key, count in stratum_counts.items() if count > 0}
+    if sum(groups.values()) < sample_size:
+        raise ValueError(
+            f"Seulement {sum(groups.values())} flux disponibles pour "
+            f"un échantillon de {sample_size}."
+        )
+    if len(groups) > sample_size:
+        raise ValueError(
+            f"{len(groups)} strates non vides dépassent la taille "
+            f"d’échantillon {sample_size}."
+        )
+    quotas = {key: 1 for key in groups}
+    remaining = sample_size - len(quotas)
+    while remaining:
+        capacities = {key: groups[key] - quotas[key] for key in groups}
+        total_capacity = sum(capacities.values())
+        if total_capacity <= 0:
+            raise ValueError("Impossible d’allouer la taille d’échantillon demandée.")
+        exact = {
+            key: remaining * capacity / total_capacity
+            for key, capacity in capacities.items()
+            if capacity > 0
+        }
+        added = 0
+        for key, allocation in exact.items():
+            count = min(capacities[key], int(allocation))
+            quotas[key] += count
+            added += count
+        remaining -= added
+        if remaining:
+            fractional_order = sorted(
+                (key for key in exact if quotas[key] < groups[key]),
+                key=lambda key: (-(exact[key] % 1), key),
+            )
+            for key in fractional_order:
+                if remaining == 0:
+                    break
+                quotas[key] += 1
+                remaining -= 1
+            if not fractional_order and remaining:
+                raise ValueError("Allocation stratifiée incomplète.")
+    return quotas
+
+
+def _format_windows(intervals: Any) -> str:
+    if intervals is None:
+        return "aucune plage définie"
+    return ", ".join(f"{start}–{end}" for start, end in intervals)
+
+
+def _write_timestamp_report(
+    report_path: Path,
+    day_stats: dict[str, dict[str, Any]],
+    file_stats: dict[str, dict[str, Any]],
+    attack_stats: AttackWindowDiagnostics,
+    attack_counts: Counter[tuple[str, str]],
+    attack_in_window: Counter[tuple[str, str]],
+    parse_failures: Counter[str],
+    weekday_mismatches: int,
+    maximum_duration_seconds: float,
+    sample_size: int,
+) -> None:
+    lines = [
+        "# Vérification des horodatages et des plages d’attaque",
+        "",
+        f"- Lignes de sortie : {sum(item['rows'] for item in day_stats.values())}",
+        f"- Échecs de parsing Timestamp : {sum(parse_failures.values())}",
+        f"- Écarts entre date parsée et day : {weekday_mismatches}",
+        f"- Échantillon de développement : {sample_size} flux (graine `seeds.global`)",
+        "",
+        "## Parsing par fichier",
+        "",
+        "| Fichier | Jour | Lignes | Échecs de parsing |",
+        "|---|---|---:|---:|",
+    ]
+    for source_file, item in sorted(file_stats.items()):
+        lines.append(
+            f"| {source_file} | {item['day']} | {item['rows']} | "
+            f"{parse_failures[source_file]} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Résumé par jour",
+            "",
+            "| Jour | Flux | ts_end min (epoch s) | ts_end max (epoch s) | Étendue max-min (s) | Somme Flow Duration (s) | Durées ≤ 0 |",
+            "|---|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for day in _JOURS:
+        if day not in day_stats:
+            continue
+        item = day_stats[day]
+        lines.append(
+            f"| {day} | {item['rows']} | {item['ts_min']:.6f} | "
+            f"{item['ts_max']:.6f} | {item['ts_max'] - item['ts_min']:.6f} | "
+            f"{item['duration_sum_seconds']:.6f} | {item['nonpositive']} |"
+        )
+
+    tolerance = float(attack_stats.rows[0]["tolerance"]) if attack_stats.rows else 0
+    lines.extend(
+        [
+            "",
+            "## Vérification des plages d’attaque",
+            "",
+            f"- Tolérance configurée : ±{tolerance:g} minute(s).",
+            "",
+            "| Jour | Classe | Plage(s) | Flux de la classe ce jour | Dans la plage | % dans la plage | Hors plage |",
+            "|---|---|---|---:|---:|---:|---:|",
+        ]
+    )
+    for row in attack_stats.rows:
+        key = (row["day"], row["label_multi"])
+        count = attack_counts[key]
+        in_window = attack_in_window[key] if row["windows"] is not None else None
+        percentage = 100 * in_window / count if in_window is not None and count else None
+        in_window_text = str(in_window) if in_window is not None else "n/a"
+        percentage_text = f"{percentage:.2f}%" if percentage is not None else "n/a"
+        outside_text = (
+            str(count - in_window) if in_window is not None else "n/a"
+        )
+        lines.append(
+            f"| {row['day']} | {row['label_multi']} | "
+            f"{_format_windows(row['windows'])} | {count} | "
+            f"{in_window_text} | {percentage_text} | {outside_text} |"
+        )
+
+    lines.extend(["", "### Classes absentes ou hors configuration", ""])
+    lines.append(
+        "- Classes configurées absentes des données : "
+        + (
+            ", ".join(attack_stats.classes_missing_from_data)
+            if attack_stats.classes_missing_from_data
+            else "aucune"
+        )
+        + "."
+    )
+    lines.append(
+        "- Classes des données absentes de la configuration : "
+        + (
+            ", ".join(attack_stats.classes_missing_from_windows)
+            if attack_stats.classes_missing_from_windows
+            else "aucune"
+        )
+        + ". Les labels ne sont pas modifiés."
+    )
+
+    monday_rows = sum(
+        item["rows"] for item in file_stats.values() if item["day"] == "Monday"
+    )
+    other_rows = sum(
+        item["rows"] for item in file_stats.values() if item["day"] != "Monday"
+    )
+    monday_zero = sum(
+        item["second_zero"] for item in day_stats.values() if item["day"] == "Monday"
+    )
+    other_zero = sum(
+        item["second_zero"] for item in day_stats.values() if item["day"] != "Monday"
+    )
+    unsorted_files = [
+        (name, item["inversions"])
+        for name, item in sorted(file_stats.items())
+        if item["inversions"] > 0
+    ]
+    file_count = len(file_stats)
+    files_without_seconds = sum(item["day"] != "Monday" for item in file_stats.values())
+    lines.extend(
+        [
+            "",
+            "## Limites",
+            "",
+            f"- {files_without_seconds} fichier(s) sur {file_count} n’ont pas de secondes dans le format source (résolution d’une minute).",
+            f"- Flux dont la seconde de l’heure de début corrigée vaut 0 : Monday {monday_zero}/{monday_rows} "
+            f"({100 * monday_zero / monday_rows if monday_rows else 0:.2f} %), "
+            f"autres jours {other_zero}/{other_rows} "
+            f"({100 * other_zero / other_rows if other_rows else 0:.2f} %).",
+            "- Fichiers d’origine dont les heures de début ne sont pas triées : "
+            + (
+                "; ".join(f"{name} ({count} inversion(s))" for name, count in unsorted_files)
+                if unsorted_files
+                else "aucun"
+            )
+            + ".",
+            f"- Durée maximale observée : {maximum_duration_seconds:.6f} seconde(s) "
+            f"({maximum_duration_seconds * 1_000_000:.0f} microsecondes).",
+            "- Les labels d’origine sont conservés ; les écarts aux fenêtres ne sont pas corrigés.",
+        ]
+    )
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def build_clean_dataset(
+    config: dict[str, Any] | None = None,
+    *,
+    input_path: str | Path | None = None,
+    report_path: str | Path | None = None,
+    attack_windows_path: str | Path | None = None,
+    sample_size: int = 5_000,
+    batch_size: int = _ROW_GROUP_SIZE,
+) -> tuple[Path, Path, Path]:
+    """Construit clean.parquet, son échantillon stratifié et le rapport."""
+    project_config = load_config() if config is None else config
+    interim = Path(project_config["paths"]["interim"])
+    source_path = (
+        Path(input_path)
+        if input_path is not None
+        else interim / "clean_raw.parquet"
+    )
+    output_path = interim / "clean.parquet"
+    sample_path = interim / "clean_sample.parquet"
+    if report_path is None:
+        report_path = interim.resolve().parents[1] / "reports" / "timestamps_check.md"
+    report_path = Path(report_path)
+    if sample_size < 1 or batch_size < 1:
+        raise ValueError("sample_size et batch_size doivent être positifs.")
+    if not source_path.exists():
+        raise FileNotFoundError(f"Parquet source introuvable : {source_path}.")
+
+    attack_config = load_attack_windows(attack_windows_path)
+    parsed_file = pq.ParquetFile(source_path)
+    day_stats: dict[str, dict[str, Any]] = {}
+    file_stats: dict[str, dict[str, Any]] = {}
+    parse_failures: Counter[str] = Counter()
+    weekday_mismatches = 0
+    nonpositive_by_day: Counter[str] = Counter()
+    maximum_duration_seconds = float("-inf")
+    attack_counts: Counter[tuple[str, str]] = Counter()
+    attack_in_window: Counter[tuple[str, str]] = Counter()
+    stratum_counts: Counter[tuple[str, str]] = Counter()
+
+    with TemporaryDirectory(prefix="horodatages-", dir=interim) as temporary:
+        temp_dir = Path(temporary)
+        day_writers: dict[str, pq.ParquetWriter] = {}
+        day_files: dict[str, Path] = {}
+        last_start_by_file: dict[str, pd.Timestamp] = {}
+        try:
+            for batch in parsed_file.iter_batches(batch_size=batch_size):
+                frame = batch.to_pandas()
+                starts = correct_start_times(
+                    frame, project_config, afficher_resultats=False
+                )
+                starts, diagnostics = add_ts_end(
+                    frame,
+                    project_config,
+                    corrected_starts=starts,
+                    afficher_resultats=False,
+                )
+                nonpositive_by_day.update(diagnostics.nonpositive_durations)
+                durations = frame["Flow Duration"].to_numpy(dtype=np.float64) / 1_000_000
+                maximum_duration_seconds = max(
+                    maximum_duration_seconds, float(durations.max())
+                )
+                for day, group_indexes in frame.groupby("day", sort=False).groups.items():
+                    day = str(day)
+                    positions = frame.index.get_indexer(group_indexes)
+                    day_duration_seconds = durations[positions]
+                    day_starts = starts.loc[group_indexes]
+                    day_stats.setdefault(
+                        day,
+                        {
+                            "day": day,
+                            "rows": 0,
+                            "ts_min": float("inf"),
+                            "ts_max": float("-inf"),
+                            "duration_sum_seconds": 0.0,
+                            "nonpositive": 0,
+                            "second_zero": 0,
+                        },
+                    )
+                    stats = day_stats[day]
+                    ts_values = frame.loc[group_indexes, "ts_end"].to_numpy()
+                    stats["rows"] += len(group_indexes)
+                    stats["ts_min"] = min(stats["ts_min"], float(ts_values.min()))
+                    stats["ts_max"] = max(stats["ts_max"], float(ts_values.max()))
+                    stats["duration_sum_seconds"] += float(day_duration_seconds.sum())
+                    stats["nonpositive"] += diagnostics.nonpositive_durations.get(day, 0)
+                    zero_seconds = int(day_starts.dt.second.eq(0).sum())
+                    stats["second_zero"] += zero_seconds
+
+                for source_file, group_indexes in frame.groupby(
+                    "source_file", sort=False
+                ).groups.items():
+                    source_file = str(source_file)
+                    indexes = frame.index.get_indexer(group_indexes)
+                    file_days = frame.loc[group_indexes, "day"].unique()
+                    if len(file_days) != 1:
+                        raise ValueError(
+                            f"{source_file} est associé à plusieurs jours."
+                        )
+                    file_day = str(file_days[0])
+                    info = file_stats.setdefault(
+                        source_file,
+                        {"day": file_day, "rows": 0, "inversions": 0},
+                    )
+                    ordered_starts = starts.iloc[indexes]
+                    start_values = ordered_starts.to_numpy(dtype="datetime64[ns]")
+                    if source_file in last_start_by_file and len(start_values):
+                        if pd.Timestamp(start_values[0]) < last_start_by_file[source_file]:
+                            info["inversions"] += 1
+                    if len(start_values) > 1:
+                        info["inversions"] += int(
+                            np.count_nonzero(np.diff(start_values) < np.timedelta64(0, "ns"))
+                        )
+                    if len(start_values):
+                        last_start_by_file[source_file] = pd.Timestamp(start_values[-1])
+                    info["rows"] += len(group_indexes)
+
+                window_diagnostics = check_attack_windows(
+                    frame, starts, attack_config
+                )
+                for row in window_diagnostics.rows:
+                    key = (row["day"], row["label_multi"])
+                    attack_counts[key] += row["flows"]
+                    if row["in_window"] is not None:
+                        attack_in_window[key] += row["in_window"]
+                stratum_counts.update(
+                    Counter(
+                        (
+                            str(day),
+                            str(label),
+                        )
+                        for day, label in zip(frame["day"], frame["label_multi"])
+                    )
+                )
+
+                frame = frame.drop(columns="Timestamp")
+                for day, group_indexes in frame.groupby("day", sort=False).groups.items():
+                    day = str(day)
+                    day_frame = frame.loc[group_indexes]
+                    table = pa.Table.from_pandas(day_frame, preserve_index=False)
+                    if day not in day_writers:
+                        day_files[day] = temp_dir / f"{day}.parquet"
+                        day_writers[day] = pq.ParquetWriter(
+                            day_files[day], table.schema
+                        )
+                    else:
+                        table = table.cast(day_writers[day].schema)
+                    day_writers[day].write_table(table, row_group_size=batch_size)
+        finally:
+            for writer in day_writers.values():
+                writer.close()
+
+        print(f"Échecs de parsing Timestamp : {sum(parse_failures.values())}.")
+        print(f"Écarts entre date parsée et day : {weekday_mismatches}.")
+        print(
+            "Durees Flow Duration <= 0 par jour : "
+            f"{dict(sorted(nonpositive_by_day.items()))}"
+        )
+
+        if not day_files:
+            raise ValueError("Aucune donnée ne subsiste dans le Parquet source.")
+        quotas = _allocate_stratified_quotas(stratum_counts, sample_size)
+        seed = int(project_config["seeds"]["global"])
+        sample_parts: list[pd.DataFrame] = []
+        output_writer: pq.ParquetWriter | None = None
+        try:
+            for day in _JOURS:
+                if day not in day_files:
+                    continue
+                day_frame = pd.read_parquet(day_files[day])
+                day_frame = day_frame.sort_values(
+                    "ts_end", kind="stable", ignore_index=True
+                )
+                if not day_frame["ts_end"].is_monotonic_increasing:
+                    raise ValueError(f"ts_end n’est pas croissant pour {day}.")
+                validate_schema(day_frame, stage="clean")
+                print(
+                    f"validate_schema(stage='clean') : {day}, "
+                    f"{len(day_frame)} lignes, OK."
+                )
+
+                for label, group in day_frame.groupby(
+                    "label_multi", sort=False, observed=True
+                ):
+                    key = (day, str(label))
+                    quota = quotas.get(key, 0)
+                    if quota:
+                        sample_parts.append(
+                            group.sample(n=quota, random_state=seed)
+                        )
+
+                table = pa.Table.from_pandas(day_frame, preserve_index=False)
+                if output_writer is None:
+                    output_writer = pq.ParquetWriter(output_path, table.schema)
+                else:
+                    table = table.cast(output_writer.schema)
+                output_writer.write_table(table, row_group_size=batch_size)
+        finally:
+            if output_writer is not None:
+                output_writer.close()
+
+        if output_writer is None:
+            raise ValueError("Aucun flux final à écrire.")
+        output_table = pq.ParquetFile(output_path)
+        if output_table.metadata.num_rows != sum(
+            item["rows"] for item in day_stats.values()
+        ):
+            raise ValueError("Le nombre de lignes écrit ne correspond pas au nombre lu.")
+
+        sample = pd.concat(sample_parts, ignore_index=True)
+        sample = sample.sort_values("ts_end", kind="stable", ignore_index=True)
+        if len(sample) != sample_size:
+            raise ValueError(
+                f"Taille d’échantillon incorrecte : {len(sample)} au lieu de {sample_size}."
+            )
+        validate_schema(sample, stage="clean")
+        pq.write_table(
+            pa.Table.from_pandas(sample, preserve_index=False),
+            sample_path,
+            row_group_size=batch_size,
+        )
+
+    all_data_classes = {label for _, label in stratum_counts}
+    configured_classes = {
+        str(class_name)
+        for day_windows in attack_config["windows"].values()
+        for class_name in day_windows
+    }
+    data_days = [day for day in _JOURS if day in day_stats]
+    attack_rows: list[dict[str, Any]] = []
+    for day in data_days:
+        for class_name in dict.fromkeys(
+            class_name
+            for class_windows in attack_config["windows"].values()
+            for class_name in class_windows
+        ):
+            windows = attack_config["windows"].get(day, {}).get(class_name)
+            key = (day, str(class_name))
+            attack_rows.append(
+                {
+                    "day": day,
+                    "label_multi": str(class_name),
+                    "windows": windows,
+                    "flows": attack_counts[key],
+                    "tolerance": float(attack_config["tolerance_minutes"]),
+                }
+            )
+    attack_diagnostics = AttackWindowDiagnostics(
+        rows=attack_rows,
+        classes_missing_from_data=sorted(configured_classes - all_data_classes),
+        classes_missing_from_windows=sorted(all_data_classes - configured_classes),
+    )
+    for day in day_stats:
+        day_stats[day]["nonpositive"] = nonpositive_by_day[day]
+    _write_timestamp_report(
+        report_path,
+        day_stats,
+        file_stats,
+        attack_diagnostics,
+        attack_counts,
+        attack_in_window,
+        parse_failures,
+        weekday_mismatches,
+        maximum_duration_seconds,
+        sample_size,
+    )
+    return output_path, sample_path, report_path
+
+
+if __name__ == "__main__":
+    clean_path, sample_path, report = build_clean_dataset()
+    print(f"Données horodatées : {clean_path}")
+    print(f"Échantillon de développement : {sample_path}")
+    print(f"Rapport : {report}")
