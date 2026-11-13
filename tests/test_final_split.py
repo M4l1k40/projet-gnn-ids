@@ -3,8 +3,34 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from src.data.final_split import build_final_splits
+from src.data.final_split import _enforce_class_gaps, build_final_splits
 from src.data.schema import ID_COLS, TARGET_COLS
+
+
+def test_final_gap_enforcement_removes_close_split_transitions() -> None:
+    frame = pd.DataFrame(
+        {
+            "day": ["Tuesday"] * 6,
+            "label_multi": ["BENIGN"] * 6,
+            "ts_end": [0.0, 10.0, 200.0, 205.0, 300.0, 500.0],
+        }
+    )
+    assignments = pd.Series(
+        ["train", "test", "test", "val", "val", "test"],
+        dtype="string",
+        name="split",
+    )
+
+    final, gaps_by_day = _enforce_class_gaps(frame, assignments, 180)
+
+    assert final.eq("gap").any()
+    assert gaps_by_day == {"Tuesday": int(final.eq("gap").sum())}
+    ordered = frame.assign(split=final).sort_values("ts_end", kind="stable")
+    kept = ordered.loc[ordered["split"].ne("gap")]
+    times = kept["ts_end"].to_numpy(dtype=np.float64)
+    splits = kept["split"].to_numpy()
+    changes = splits[1:] != splits[:-1]
+    assert (np.diff(times)[changes] + 1e-5 >= 180).all()
 
 
 def test_build_final_splits_writes_exact_schema_and_meta(tmp_path) -> None:

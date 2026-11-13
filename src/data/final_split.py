@@ -18,6 +18,7 @@ _KEY_COLUMNS = ("day", "ts_end", "label_multi")
 _META_COLUMNS = ("flow_id", "orig_flow_id", "source_file")
 _BATCH_SIZE = 50_000
 _SPLITS = ("train", "val", "test")
+_GAP_TOLERANCE_SECONDS = 1e-5
 
 
 def _final_columns(source_schema: pa.Schema) -> tuple[list[str], list[str]]:
@@ -45,6 +46,62 @@ def _final_columns(source_schema: pa.Schema) -> tuple[list[str], list[str]]:
         )
     final_columns = ID_COLS + feature_columns + TARGET_COLS + ["split", "day"]
     return final_columns, feature_columns
+
+
+def _enforce_class_gaps(
+    frame: pd.DataFrame,
+    assignments: pd.Series,
+    gap_seconds: float,
+) -> tuple[pd.Series, dict[str, int]]:
+    """Retire les lignes autour des transitions qui restent trop proches."""
+    result = assignments.copy()
+    if gap_seconds > 0:
+        for _, group in frame.groupby(
+            ["day", "label_multi"],
+            sort=False,
+            observed=True,
+        ):
+            ordered = group.assign(
+                _split_timestamp=pd.to_numeric(group["ts_end"], errors="coerce")
+            ).sort_values("_split_timestamp", kind="stable")
+            indexes = ordered.index
+            timestamps = ordered["_split_timestamp"].to_numpy(dtype=np.float64)
+            labels = result.loc[indexes].astype(str).to_numpy()
+            while True:
+                kept = np.flatnonzero(labels != "gap")
+                if len(kept) < 2:
+                    break
+                differences = np.diff(timestamps[kept])
+                transitions = labels[kept[1:]] != labels[kept[:-1]]
+                violations = np.flatnonzero(
+                    transitions
+                    & (differences + _GAP_TOLERANCE_SECONDS < gap_seconds)
+                )
+                if not len(violations):
+                    break
+                changed = False
+                for violation in violations:
+                    left = timestamps[kept[violation]]
+                    right = timestamps[kept[violation + 1]]
+                    midpoint = (left + right) / 2
+                    in_gap = (
+                        (timestamps >= midpoint - gap_seconds / 2)
+                        & (timestamps <= midpoint + gap_seconds / 2)
+                        & (labels != "gap")
+                    )
+                    if in_gap.any():
+                        labels[in_gap] = "gap"
+                        changed = True
+                if not changed:
+                    raise ValueError("Impossible d’appliquer le gap par classe.")
+            result.loc[indexes] = labels
+
+    gaps_by_day = result.eq("gap").groupby(
+        frame["day"],
+        sort=True,
+        observed=True,
+    ).sum()
+    return result, {str(day): int(count) for day, count in gaps_by_day.items()}
 
 
 def build_final_splits(
@@ -101,6 +158,11 @@ def build_final_splits(
         keys,
         ratios=split_config,
         gap_minutes=gap_minutes,
+    )
+    assignments, gaps_by_day = _enforce_class_gaps(
+        keys,
+        assignments,
+        gap_seconds=gap_minutes * 60,
     )
     assignment_counts = Counter(assignments.astype(str).tolist())
     gap_count = assignment_counts.pop("gap", 0)

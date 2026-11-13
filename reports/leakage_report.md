@@ -9,14 +9,14 @@
 
 | Classe | Flux test | Flux train même classe | Vecteurs identiques | Part du test |
 |---|---:|---:|---:|---:|
-| BENIGN | 840429 | 1193282 | 179928 | 21.4091 % |
+| BENIGN | 830584 | 1181398 | 177387 | 21.3569 % |
 | Bot | 476 | 1174 | 0 | 0.0000 % |
-| DDoS | 12501 | 76815 | 5 | 0.0400 % |
+| DDoS | 12501 | 76815 | 8 | 0.0640 % |
 | DoS GoldenEye | 0 | 6176 | 0 | 0.0000 % |
-| DoS Hulk | 14152 | 138074 | 2508 | 17.7219 % |
+| DoS Hulk | 14152 | 138074 | 2525 | 17.8420 % |
 | DoS Slowhttptest | 1205 | 3300 | 0 | 0.0000 % |
 | DoS slowloris | 714 | 3478 | 0 | 0.0000 % |
-| FTP-Patator | 1579 | 4764 | 478 | 30.2723 % |
+| FTP-Patator | 1579 | 4764 | 480 | 30.3990 % |
 | Heartbleed | 0 | 7 | 0 | 0.0000 % |
 | Infiltration | 9 | 22 | 0 | 0.0000 % |
 | PortScan | 20046 | 95698 | 19699 | 98.2690 % |
@@ -29,30 +29,30 @@
 
 | Comparaison | Classe | Échantillon | Train échantillonné | Q1 | Q5 | Q25 | Q50 | Distance nulle |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| test_vers_train | BENIGN | 47076 | 300000 | 0 | 0 | 1.4025089e-05 | 0.0010124128 | 12.5712 % |
-| test_vers_train | Bot | 27 | 300000 | 1.482396e-05 | 1.6240025e-05 | 3.3747499e-05 | 5.8012528e-05 | 0.0000 % |
-| test_vers_train | DDoS | 700 | 300000 | 1.0837655e-05 | 5.0850798e-05 | 0.00022469382 | 0.00075593551 | 0.0000 % |
-| test_vers_train | DoS Hulk | 793 | 300000 | 0 | 0 | 0.00013110948 | 0.0018132859 | 17.5284 % |
-| test_vers_train | DoS Slowhttptest | 67 | 300000 | 1.2974062e-05 | 2.8397552e-05 | 0.00015502268 | 0.00042371889 | 0.0000 % |
-| test_vers_train | DoS slowloris | 40 | 300000 | 3.9319591e-06 | 1.175599e-05 | 0.0061581947 | 3.2275541 | 0.0000 % |
-| test_vers_train | FTP-Patator | 88 | 300000 | 0 | 0 | 1.4641907e-06 | 0.0018984751 | 15.9091 % |
-| test_vers_train | Infiltration | 1 | 300000 | 0.56700044 | 0.56700044 | 0.56700044 | 0.56700044 | 0.0000 % |
-| test_vers_train | PortScan | 1123 | 300000 | 0 | 0 | 0 | 0 | 98.1300 % |
-| test_vers_train | SSH-Patator | 67 | 300000 | 0 | 0 | 0 | 0 | 53.7313 % |
-| test_vers_train | Web Attack - Brute Force | 14 | 300000 | 1.0251018e-05 | 1.3246787e-05 | 7.2854499e-05 | 0.00019168424 | 0.0000 % |
-| test_vers_train | Web Attack - XSS | 4 | 300000 | 0.00013090784 | 0.00016894447 | 0.00035912758 | 0.00070082217 | 0.0000 % |
-| val_vers_train | BENIGN | 49425 | 300000 | 0 | 0 | 1.0416762e-05 | 0.0008279616 | 14.3207 % |
-| val_vers_train | Bot | 35 | 300000 | 0 | 0 | 1.3003378e-05 | 3.41739e-05 | 22.8571 % |
-| val_vers_train | DoS slowloris | 42 | 300000 | 0 | 0 | 4.3439831e-06 | 9.5401695e-06 | 14.2857 % |
-| val_vers_train | FTP-Patator | 267 | 300000 | 0 | 0 | 1.0946416e-06 | 0.0026771341 | 18.7266 % |
-| val_vers_train | Heartbleed | 1 | 300000 | 3.6837819 | 3.6837819 | 3.6837819 | 3.6837819 | 0.0000 % |
-| val_vers_train | Infiltration | 1 | 300000 | 3.31946 | 3.31946 | 3.31946 | 3.31946 | 0.0000 % |
-| val_vers_train | SSH-Patator | 194 | 300000 | 0 | 0 | 0 | 0.0020381517 | 46.9072 % |
-| val_vers_train | Web Attack - Brute Force | 34 | 300000 | 4.4716669e-05 | 7.7709301e-05 | 0.00017859426 | 0.00043901738 | 0.0000 % |
-| val_vers_train | Web Attack - XSS | 1 | 300000 | 0.0003320505 | 0.0003320505 | 0.0003320505 | 0.0003320505 | 0.0000 % |
+| test_vers_train | BENIGN | 47043 | 300000 | 0 | 0 | 1.4575576e-05 | 0.00097639682 | 12.4801 % |
+| test_vers_train | Bot | 27 | 300000 | 1.1443651e-05 | 1.4920477e-05 | 2.8182198e-05 | 4.4103698e-05 | 0.0000 % |
+| test_vers_train | DDoS | 708 | 300000 | 1.1065325e-05 | 5.1152126e-05 | 0.00022426202 | 0.00075415841 | 0.0000 % |
+| test_vers_train | DoS Hulk | 802 | 300000 | 0 | 0 | 0.00013225498 | 0.0018078004 | 17.4564 % |
+| test_vers_train | DoS Slowhttptest | 68 | 300000 | 1.3009767e-05 | 2.8533414e-05 | 0.00015042794 | 0.00043415062 | 0.0000 % |
+| test_vers_train | DoS slowloris | 40 | 300000 | 3.9198854e-06 | 1.1719944e-05 | 0.0061458939 | 3.2268072 | 0.0000 % |
+| test_vers_train | FTP-Patator | 89 | 300000 | 0 | 0 | 1.4576552e-06 | 0.0019065129 | 15.7303 % |
+| test_vers_train | Infiltration | 1 | 300000 | 0.56885471 | 0.56885471 | 0.56885471 | 0.56885471 | 0.0000 % |
+| test_vers_train | PortScan | 1135 | 300000 | 0 | 0 | 0 | 0 | 98.1498 % |
+| test_vers_train | SSH-Patator | 68 | 300000 | 0 | 0 | 0 | 0 | 52.9412 % |
+| test_vers_train | Web Attack - Brute Force | 15 | 300000 | 1.0287403e-05 | 1.3502091e-05 | 7.9123066e-05 | 0.00020454094 | 0.0000 % |
+| test_vers_train | Web Attack - XSS | 4 | 300000 | 0.00013059835 | 0.00016853785 | 0.00035823533 | 0.00063885909 | 0.0000 % |
+| val_vers_train | BENIGN | 49418 | 300000 | 0 | 0 | 1.0260761e-05 | 0.00084465742 | 14.5574 % |
+| val_vers_train | Bot | 35 | 300000 | 0 | 0 | 1.2978046e-05 | 3.4116765e-05 | 22.8571 % |
+| val_vers_train | DoS slowloris | 42 | 300000 | 0 | 0 | 4.3279631e-06 | 9.5096145e-06 | 14.2857 % |
+| val_vers_train | FTP-Patator | 270 | 300000 | 0 | 0 | 1.093003e-06 | 0.0027116811 | 18.5185 % |
+| val_vers_train | Heartbleed | 1 | 300000 | 3.6816748 | 3.6816748 | 3.6816748 | 3.6816748 | 0.0000 % |
+| val_vers_train | Infiltration | 1 | 300000 | 5.9323807 | 5.9323807 | 5.9323807 | 5.9323807 | 0.0000 % |
+| val_vers_train | SSH-Patator | 197 | 300000 | 0 | 0 | 0 | 0.0020358972 | 46.7005 % |
+| val_vers_train | Web Attack - Brute Force | 35 | 300000 | 4.5033821e-05 | 7.7854924e-05 | 0.00018877667 | 0.00042137127 | 0.0000 % |
+| val_vers_train | Web Attack - XSS | 1 | 300000 | 0.0003312166 | 0.0003312166 | 0.0003312166 | 0.0003312166 | 0.0000 % |
 
 ## Résumé
 
-- Flux test identiques au train, même classe : 203167/892629 (22.7605 %).
-- Médiane de distance test→train : 0.00089558194.
-- Distances test→train nulles dans l’échantillon : 14.4180 %.
+- Flux test identiques au train, même classe : 200648/882784 (22.7290 %).
+- Médiane de distance test→train : 0.00086085598.
+- Distances test→train nulles dans l’échantillon : 14.3500 %.
