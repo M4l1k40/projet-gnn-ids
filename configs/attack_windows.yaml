@@ -1,0 +1,22 @@
+# Plages horaires officielles CIC-IDS2017 (page unb.ca), heures locales du dataset.
+# Servent à VÉRIFIER la correction 12 h, pas à relabelliser. Un écart n'est pas forcément une erreur de ton code.
+tolerance_minutes: 2
+windows:
+  Tuesday:
+    FTP-Patator: [["09:20", "10:20"]]
+    SSH-Patator: [["14:00", "15:00"]]
+  Wednesday:
+    DoS slowloris: [["09:47", "10:10"]]
+    DoS Slowhttptest: [["10:14", "10:35"]]
+    DoS Hulk: [["10:43", "11:00"]]
+    DoS GoldenEye: [["11:10", "11:23"]]
+    Heartbleed: [["15:12", "15:32"]]
+  Thursday:
+    Web Attack - Brute Force: [["09:20", "10:00"]]
+    Web Attack - XSS: [["10:15", "10:35"]]
+    Web Attack - Sql Injection: [["10:40", "10:42"]]
+    Infiltration: [["14:19", "15:45"]]
+  Friday:
+    Bot: [["10:02", "11:02"]]
+    PortScan: [["13:55", "15:29"]]
+    DDoS: [["15:56", "16:16"]]
