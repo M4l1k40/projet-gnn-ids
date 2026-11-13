@@ -5,6 +5,7 @@ scikit-learn
 xgboost
 shap
 scipy
+matplotlib
 pyyaml
 pytest
 joblib
