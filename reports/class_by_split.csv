@@ -1,0 +1,181 @@
+analyse,portee,jour,classe,bloc,effectif,pourcentage,exploitable
+multiclasse,global,,BENIGN,train,1294054,56.97862113968338,True
+multiclasse,global,,BENIGN,val,351979,15.498022563296908,True
+multiclasse,global,,BENIGN,test,561635,24.729406874663713,True
+multiclasse,global,,BENIGN,gap,63454,2.7939494223559986,True
+multiclasse,global,,Bot,train,1956,100.0,False
+multiclasse,global,,Bot,val,0,0.0,False
+multiclasse,global,,Bot,test,0,0.0,False
+multiclasse,global,,Bot,gap,0,0.0,False
+multiclasse,global,,DDoS,train,0,0.0,False
+multiclasse,global,,DDoS,val,22363,17.467682093341143,False
+multiclasse,global,,DDoS,test,73011,57.02870533099004,False
+multiclasse,global,,DDoS,gap,32651,25.503612575668814,False
+multiclasse,global,,DoS GoldenEye,train,10293,100.0,False
+multiclasse,global,,DoS GoldenEye,val,0,0.0,False
+multiclasse,global,,DoS GoldenEye,test,0,0.0,False
+multiclasse,global,,DoS GoldenEye,gap,0,0.0,False
+multiclasse,global,,DoS Hulk,train,230123,100.0,False
+multiclasse,global,,DoS Hulk,val,0,0.0,False
+multiclasse,global,,DoS Hulk,test,0,0.0,False
+multiclasse,global,,DoS Hulk,gap,0,0.0,False
+multiclasse,global,,DoS Slowhttptest,train,5499,100.0,False
+multiclasse,global,,DoS Slowhttptest,val,0,0.0,False
+multiclasse,global,,DoS Slowhttptest,test,0,0.0,False
+multiclasse,global,,DoS Slowhttptest,gap,0,0.0,False
+multiclasse,global,,DoS slowloris,train,5791,99.91373360938579,False
+multiclasse,global,,DoS slowloris,val,0,0.0,False
+multiclasse,global,,DoS slowloris,test,5,0.0862663906142167,False
+multiclasse,global,,DoS slowloris,gap,0,0.0,False
+multiclasse,global,,FTP-Patator,train,7935,100.0,False
+multiclasse,global,,FTP-Patator,val,0,0.0,False
+multiclasse,global,,FTP-Patator,test,0,0.0,False
+multiclasse,global,,FTP-Patator,gap,0,0.0,False
+multiclasse,global,,Heartbleed,train,0,0.0,False
+multiclasse,global,,Heartbleed,val,0,0.0,False
+multiclasse,global,,Heartbleed,test,11,100.0,False
+multiclasse,global,,Heartbleed,gap,0,0.0,False
+multiclasse,global,,Infiltration,train,18,50.0,False
+multiclasse,global,,Infiltration,val,9,25.0,False
+multiclasse,global,,Infiltration,test,7,19.444444444444443,False
+multiclasse,global,,Infiltration,gap,2,5.555555555555555,False
+multiclasse,global,,PortScan,train,138758,87.37689226971612,False
+multiclasse,global,,PortScan,val,20046,12.623107730283872,False
+multiclasse,global,,PortScan,test,0,0.0,False
+multiclasse,global,,PortScan,gap,0,0.0,False
+multiclasse,global,,SSH-Patator,train,0,0.0,False
+multiclasse,global,,SSH-Patator,val,4768,80.85467186705104,False
+multiclasse,global,,SSH-Patator,test,539,9.140240800406987,False
+multiclasse,global,,SSH-Patator,gap,590,10.00508733254197,False
+multiclasse,global,,Web Attack - Brute Force,train,1507,100.0,False
+multiclasse,global,,Web Attack - Brute Force,val,0,0.0,False
+multiclasse,global,,Web Attack - Brute Force,test,0,0.0,False
+multiclasse,global,,Web Attack - Brute Force,gap,0,0.0,False
+multiclasse,global,,Web Attack - Sql Injection,train,21,100.0,False
+multiclasse,global,,Web Attack - Sql Injection,val,0,0.0,False
+multiclasse,global,,Web Attack - Sql Injection,test,0,0.0,False
+multiclasse,global,,Web Attack - Sql Injection,gap,0,0.0,False
+multiclasse,global,,Web Attack - XSS,train,652,100.0,False
+multiclasse,global,,Web Attack - XSS,val,0,0.0,False
+multiclasse,global,,Web Attack - XSS,test,0,0.0,False
+multiclasse,global,,Web Attack - XSS,gap,0,0.0,False
+multiclasse,jour,Friday,BENIGN,train,280914,67.865425871166,True
+multiclasse,jour,Friday,BENIGN,val,58060,14.026593997023637,True
+multiclasse,jour,Friday,BENIGN,test,59894,14.469666222144914,True
+multiclasse,jour,Friday,BENIGN,gap,15060,3.638313909665449,True
+multiclasse,jour,Friday,Bot,train,1956,100.0,False
+multiclasse,jour,Friday,Bot,val,0,0.0,False
+multiclasse,jour,Friday,Bot,test,0,0.0,False
+multiclasse,jour,Friday,Bot,gap,0,0.0,False
+multiclasse,jour,Friday,DDoS,train,0,0.0,False
+multiclasse,jour,Friday,DDoS,val,22363,17.467682093341143,False
+multiclasse,jour,Friday,DDoS,test,73011,57.02870533099004,False
+multiclasse,jour,Friday,DDoS,gap,32651,25.503612575668814,False
+multiclasse,jour,Friday,PortScan,train,138758,87.37689226971612,False
+multiclasse,jour,Friday,PortScan,val,20046,12.623107730283872,False
+multiclasse,jour,Friday,PortScan,test,0,0.0,False
+multiclasse,jour,Friday,PortScan,gap,0,0.0,False
+multiclasse,jour,Monday,BENIGN,train,317670,60.0,True
+multiclasse,jour,Monday,BENIGN,val,73967,13.970535461327794,True
+multiclasse,jour,Monday,BENIGN,test,124171,23.452828406837284,True
+multiclasse,jour,Monday,BENIGN,gap,13642,2.576636131834923,True
+multiclasse,jour,Thursday,BENIGN,train,272892,59.809716679049764,True
+multiclasse,jour,Thursday,BENIGN,val,60371,13.231506990424466,True
+multiclasse,jour,Thursday,BENIGN,test,102060,22.36848161273991,True
+multiclasse,jour,Thursday,BENIGN,gap,20944,4.5902947177858575,True
+multiclasse,jour,Thursday,Infiltration,train,18,50.0,False
+multiclasse,jour,Thursday,Infiltration,val,9,25.0,False
+multiclasse,jour,Thursday,Infiltration,test,7,19.444444444444443,False
+multiclasse,jour,Thursday,Infiltration,gap,2,5.555555555555555,False
+multiclasse,jour,Thursday,Web Attack - Brute Force,train,1507,100.0,False
+multiclasse,jour,Thursday,Web Attack - Brute Force,val,0,0.0,False
+multiclasse,jour,Thursday,Web Attack - Brute Force,test,0,0.0,False
+multiclasse,jour,Thursday,Web Attack - Brute Force,gap,0,0.0,False
+multiclasse,jour,Thursday,Web Attack - Sql Injection,train,21,100.0,False
+multiclasse,jour,Thursday,Web Attack - Sql Injection,val,0,0.0,False
+multiclasse,jour,Thursday,Web Attack - Sql Injection,test,0,0.0,False
+multiclasse,jour,Thursday,Web Attack - Sql Injection,gap,0,0.0,False
+multiclasse,jour,Thursday,Web Attack - XSS,train,652,100.0,False
+multiclasse,jour,Thursday,Web Attack - XSS,val,0,0.0,False
+multiclasse,jour,Thursday,Web Attack - XSS,test,0,0.0,False
+multiclasse,jour,Thursday,Web Attack - XSS,gap,0,0.0,False
+multiclasse,jour,Tuesday,BENIGN,train,259450,60.08443547957546,True
+multiclasse,jour,Tuesday,BENIGN,val,57728,13.36887373815738,True
+multiclasse,jour,Tuesday,BENIGN,test,106914,24.75955804533949,True
+multiclasse,jour,Tuesday,BENIGN,gap,7717,1.7871327369276695,True
+multiclasse,jour,Tuesday,FTP-Patator,train,7935,100.0,False
+multiclasse,jour,Tuesday,FTP-Patator,val,0,0.0,False
+multiclasse,jour,Tuesday,FTP-Patator,test,0,0.0,False
+multiclasse,jour,Tuesday,FTP-Patator,gap,0,0.0,False
+multiclasse,jour,Tuesday,SSH-Patator,train,0,0.0,False
+multiclasse,jour,Tuesday,SSH-Patator,val,4768,80.85467186705104,False
+multiclasse,jour,Tuesday,SSH-Patator,test,539,9.140240800406987,False
+multiclasse,jour,Tuesday,SSH-Patator,gap,590,10.00508733254197,False
+multiclasse,jour,Wednesday,BENIGN,train,163128,37.10254100821529,True
+multiclasse,jour,Wednesday,BENIGN,val,101853,23.165888807008926,True
+multiclasse,jour,Wednesday,BENIGN,test,168596,38.346206683224615,True
+multiclasse,jour,Wednesday,BENIGN,gap,6091,1.3853635015511705,True
+multiclasse,jour,Wednesday,DoS GoldenEye,train,10293,100.0,False
+multiclasse,jour,Wednesday,DoS GoldenEye,val,0,0.0,False
+multiclasse,jour,Wednesday,DoS GoldenEye,test,0,0.0,False
+multiclasse,jour,Wednesday,DoS GoldenEye,gap,0,0.0,False
+multiclasse,jour,Wednesday,DoS Hulk,train,230123,100.0,False
+multiclasse,jour,Wednesday,DoS Hulk,val,0,0.0,False
+multiclasse,jour,Wednesday,DoS Hulk,test,0,0.0,False
+multiclasse,jour,Wednesday,DoS Hulk,gap,0,0.0,False
+multiclasse,jour,Wednesday,DoS Slowhttptest,train,5499,100.0,False
+multiclasse,jour,Wednesday,DoS Slowhttptest,val,0,0.0,False
+multiclasse,jour,Wednesday,DoS Slowhttptest,test,0,0.0,False
+multiclasse,jour,Wednesday,DoS Slowhttptest,gap,0,0.0,False
+multiclasse,jour,Wednesday,DoS slowloris,train,5791,99.91373360938579,False
+multiclasse,jour,Wednesday,DoS slowloris,val,0,0.0,False
+multiclasse,jour,Wednesday,DoS slowloris,test,5,0.0862663906142167,False
+multiclasse,jour,Wednesday,DoS slowloris,gap,0,0.0,False
+multiclasse,jour,Wednesday,Heartbleed,train,0,0.0,False
+multiclasse,jour,Wednesday,Heartbleed,val,0,0.0,False
+multiclasse,jour,Wednesday,Heartbleed,test,11,100.0,False
+multiclasse,jour,Wednesday,Heartbleed,gap,0,0.0,False
+binaire,global,,ATTACK,train,402553,72.3294193745452,True
+binaire,global,,ATTACK,val,47186,8.478227668424504,True
+binaire,global,,ATTACK,test,73573,13.219358374284662,True
+binaire,global,,ATTACK,gap,33243,5.972994582745641,True
+binaire,global,,BENIGN,train,1294054,56.97862113968338,True
+binaire,global,,BENIGN,val,351979,15.498022563296908,True
+binaire,global,,BENIGN,test,561635,24.729406874663713,True
+binaire,global,,BENIGN,gap,63454,2.7939494223559986,True
+binaire,jour,Friday,ATTACK,train,140714,48.72621500424191,True
+binaire,jour,Friday,ATTACK,val,42409,14.685319528368856,True
+binaire,jour,Friday,ATTACK,test,73011,25.282130304551828,True
+binaire,jour,Friday,ATTACK,gap,32651,11.306335162837405,True
+binaire,jour,Friday,BENIGN,train,280914,67.865425871166,True
+binaire,jour,Friday,BENIGN,val,58060,14.026593997023637,True
+binaire,jour,Friday,BENIGN,test,59894,14.469666222144914,True
+binaire,jour,Friday,BENIGN,gap,15060,3.638313909665449,True
+binaire,jour,Monday,BENIGN,train,317670,60.0,True
+binaire,jour,Monday,BENIGN,val,73967,13.970535461327794,True
+binaire,jour,Monday,BENIGN,test,124171,23.452828406837284,True
+binaire,jour,Monday,BENIGN,gap,13642,2.576636131834923,True
+binaire,jour,Thursday,ATTACK,train,2198,99.18772563176896,False
+binaire,jour,Thursday,ATTACK,val,9,0.40613718411552346,False
+binaire,jour,Thursday,ATTACK,test,7,0.315884476534296,False
+binaire,jour,Thursday,ATTACK,gap,2,0.09025270758122744,False
+binaire,jour,Thursday,BENIGN,train,272892,59.809716679049764,True
+binaire,jour,Thursday,BENIGN,val,60371,13.231506990424466,True
+binaire,jour,Thursday,BENIGN,test,102060,22.36848161273991,True
+binaire,jour,Thursday,BENIGN,gap,20944,4.5902947177858575,True
+binaire,jour,Tuesday,ATTACK,train,7935,57.36697513013303,True
+binaire,jour,Tuesday,ATTACK,val,4768,34.470792365529206,True
+binaire,jour,Tuesday,ATTACK,test,539,3.896761133603239,True
+binaire,jour,Tuesday,ATTACK,gap,590,4.265471370734528,True
+binaire,jour,Tuesday,BENIGN,train,259450,60.08443547957546,True
+binaire,jour,Tuesday,BENIGN,val,57728,13.36887373815738,True
+binaire,jour,Tuesday,BENIGN,test,106914,24.75955804533949,True
+binaire,jour,Tuesday,BENIGN,gap,7717,1.7871327369276695,True
+binaire,jour,Wednesday,ATTACK,train,251706,99.99364378163212,False
+binaire,jour,Wednesday,ATTACK,val,0,0.0,False
+binaire,jour,Wednesday,ATTACK,test,16,0.006356218367882029,False
+binaire,jour,Wednesday,ATTACK,gap,0,0.0,False
+binaire,jour,Wednesday,BENIGN,train,163128,37.10254100821529,True
+binaire,jour,Wednesday,BENIGN,val,101853,23.165888807008926,True
+binaire,jour,Wednesday,BENIGN,test,168596,38.346206683224615,True
+binaire,jour,Wednesday,BENIGN,gap,6091,1.3853635015511705,True
