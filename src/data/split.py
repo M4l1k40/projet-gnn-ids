@@ -20,6 +20,7 @@ _REQUIRED_INPUT_COLUMNS = (
     "Flow Duration",
 )
 _GAP_MARGIN_SECONDS = 60.0
+_BLOCK_ASSIGNMENT_ATTEMPTS = 20_000
 
 
 def _normalize_ratios(ratios: Mapping[str, float]) -> tuple[float, float, float]:
@@ -108,6 +109,279 @@ def assign_split(
         lost_by_day[str(day)] = int(np.count_nonzero(labels == "gap"))
 
     return assigned, dict(lost_by_day)
+
+
+def _labels_from_cutpoints(
+    values: np.ndarray,
+    t1: float,
+    t2: float,
+    gap_seconds: float,
+) -> np.ndarray:
+    labels = np.full(len(values), "gap", dtype=object)
+    labels[values <= t1] = "train"
+    if gap_seconds == 0:
+        labels[(values > t1) & (values <= t2)] = "val"
+        labels[values > t2] = "test"
+    else:
+        labels[(values >= t1 + gap_seconds) & (values <= t2)] = "val"
+        labels[values >= t2 + gap_seconds] = "test"
+    return labels
+
+
+def find_attack_window_overlaps(df: pd.DataFrame) -> list[dict[str, object]]:
+    """Liste les intersections inclusives entre plages de classes d’attaque par jour."""
+    required = {"day", "ts_end", "label_multi"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError("Colonnes requises absentes : " + ", ".join(sorted(missing)))
+    attacks = df.loc[df["label_multi"].notna() & df["label_multi"].ne("BENIGN")]
+    overlaps: list[dict[str, object]] = []
+    for day, day_frame in attacks.groupby("day", sort=True, observed=True):
+        windows = (
+            day_frame.groupby("label_multi", sort=True, observed=True)["ts_end"]
+            .agg(["min", "max"])
+            .sort_values(["min", "max"], kind="stable")
+        )
+        entries = [
+            (str(label), float(row["min"]), float(row["max"]))
+            for label, row in windows.iterrows()
+        ]
+        for left_index, (left_label, left_start, left_end) in enumerate(entries):
+            for right_label, right_start, right_end in entries[left_index + 1 :]:
+                overlap_start = max(left_start, right_start)
+                overlap_end = min(left_end, right_end)
+                if overlap_start <= overlap_end:
+                    overlaps.append(
+                        {
+                            "day": str(day),
+                            "first_class": left_label,
+                            "second_class": right_label,
+                            "overlap_start": overlap_start,
+                            "overlap_end": overlap_end,
+                        }
+                    )
+    return overlaps
+
+
+def assign_split_segment(
+    df: pd.DataFrame,
+    ratios: Mapping[str, float],
+    gap_minutes: float,
+) -> tuple[pd.Series, dict[str, int]]:
+    """Affecte les attaques par leurs segments temporels, puis BENIGN associé.
+
+    Chaque plage d’attaque est l’intervalle min/max observé de ``ts_end`` pour
+    un couple (jour, classe). Les coupures sont calculées par rang sur les flux
+    de l’attaque. Les flux BENIGN dans plusieurs plages suivent la plage qui
+    commence le plus tôt; les autres reprennent le split chronologique par jour.
+    """
+    required = {"day", "ts_end", "label_multi"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError("Colonnes requises absentes : " + ", ".join(sorted(missing)))
+    if df["label_multi"].isna().any():
+        raise ValueError(
+            f"label_multi : {int(df['label_multi'].isna().sum())} valeur(s) manquante(s)."
+        )
+    if not np.isfinite(gap_minutes) or gap_minutes < 0:
+        raise ValueError("gap_minutes doit être positif ou nul et fini.")
+    train_ratio, validation_ratio, _ = _normalize_ratios(ratios)
+    baseline, _ = assign_split(df, ratios, gap_minutes, mode="count")
+    assigned = baseline.copy()
+    gap_seconds = float(gap_minutes) * 60
+    timestamps = pd.to_numeric(df["ts_end"], errors="coerce")
+    if timestamps.isna().any() or not np.isfinite(timestamps).all():
+        raise ValueError("ts_end doit contenir uniquement des valeurs finies.")
+
+    for day, day_frame in df.groupby("day", sort=True, observed=True):
+        day_indexes = day_frame.index
+        day_starts: list[tuple[float, str, float, float, float]] = []
+        attack_frame = day_frame.loc[day_frame["label_multi"].ne("BENIGN")]
+        for class_name, class_frame in attack_frame.groupby(
+            "label_multi", sort=False, observed=True
+        ):
+            ordered = class_frame.assign(
+                _split_timestamp=timestamps.loc[class_frame.index]
+            ).sort_values("_split_timestamp", kind="stable")
+            values = ordered["_split_timestamp"].to_numpy(dtype=np.float64)
+            if not len(values):
+                continue
+            start = float(values[0])
+            end = float(values[-1])
+            t1 = _quantile_timestamp(values, train_ratio, "count")
+            t2 = _quantile_timestamp(values, train_ratio + validation_ratio, "count")
+            class_labels = _labels_from_cutpoints(values, t1, t2, gap_seconds)
+            assigned.loc[ordered.index] = class_labels
+            day_starts.append((start, str(class_name), end, t1, t2))
+
+        benign_frame = day_frame.loc[day_frame["label_multi"].eq("BENIGN")]
+        if not benign_frame.empty and day_starts:
+            benign_times = timestamps.loc[benign_frame.index].to_numpy(dtype=np.float64)
+            benign_labels = baseline.loc[benign_frame.index].to_numpy(dtype=object)
+            unassigned_benign = np.ones(len(benign_times), dtype=bool)
+            for start, class_name, end, t1, t2 in sorted(day_starts):
+                owned = (
+                    unassigned_benign
+                    & (benign_times >= start)
+                    & (benign_times <= end)
+                )
+                if not owned.any():
+                    continue
+                benign_labels[owned] = _labels_from_cutpoints(
+                    benign_times[owned],
+                    t1,
+                    t2,
+                    gap_seconds,
+                )
+                unassigned_benign[owned] = False
+            assigned.loc[benign_frame.index] = benign_labels
+
+    gaps = assigned.eq("gap")
+    lost_by_day = {
+        str(day): int(count)
+        for day, count in gaps.groupby(df["day"], sort=True, observed=True).sum().items()
+    }
+    return assigned, lost_by_day
+
+
+def _block_quotas(
+    block_count: int,
+    ratios: tuple[float, float, float],
+) -> tuple[int, int, int]:
+    exact = np.asarray(ratios, dtype=np.float64) * block_count
+    quotas = np.floor(exact).astype(int)
+    remaining = block_count - int(quotas.sum())
+    order = np.argsort(-(exact - quotas), kind="stable")
+    quotas[order[:remaining]] += 1
+    if np.any(quotas == 0):
+        raise ValueError(
+            f"Seulement {block_count} blocs disponibles pour représenter train, val et test."
+        )
+    return int(quotas[0]), int(quotas[1]), int(quotas[2])
+
+
+def _block_assignment_satisfies(
+    block_labels: np.ndarray,
+    attack_blocks: Mapping[str, set[int]],
+    split_names: tuple[str, ...],
+) -> bool:
+    for blocks in attack_blocks.values():
+        if len(blocks) >= 3 and {
+            str(block_labels[block]) for block in blocks
+        } != set(split_names):
+            return False
+    return True
+
+
+def assign_split_blocks(
+    df: pd.DataFrame,
+    ratios: Mapping[str, float],
+    gap_minutes: float,
+    block_minutes: float = 10,
+    seed: int = 42,
+) -> tuple[pd.Series, dict[str, int]]:
+    """Affecte des blocs contigus de façon reproductible et stratifiée.
+
+    Pour chaque jour, les intervalles de ``block_minutes`` sont ancrés à son
+    premier ``ts_end``. Le nombre de blocs train/val/test suit les ratios par
+    méthode des plus grands restes. Avec un générateur initialisé par ``seed``,
+    une permutation aléatoire des blocs est tirée puis rejetée tant qu'une
+    classe d'attaque présente dans au moins trois blocs n'apparaît pas dans
+    chacun des trois splits. Après affectation, toute transition entre deux
+    blocs de splits différents retire les flux situés à moins de
+    ``gap_minutes`` avant ou après la frontière, en les marquant ``gap``.
+    """
+    required = {"day", "ts_end", "label_multi"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError("Colonnes requises absentes : " + ", ".join(sorted(missing)))
+    if df["label_multi"].isna().any():
+        raise ValueError(
+            f"label_multi : {int(df['label_multi'].isna().sum())} valeur(s) manquante(s)."
+        )
+    if not np.isfinite(gap_minutes) or gap_minutes < 0:
+        raise ValueError("gap_minutes doit être positif ou nul et fini.")
+    if not np.isfinite(block_minutes) or block_minutes <= 0:
+        raise ValueError("block_minutes doit être strictement positif et fini.")
+    ratios_normalized = _normalize_ratios(ratios)
+    validation_key = "validation" if "validation" in ratios else "val"
+    split_names = ("train", "val", "test")
+    timestamps = pd.to_numeric(df["ts_end"], errors="coerce")
+    if timestamps.isna().any() or not np.isfinite(timestamps).all():
+        raise ValueError("ts_end doit contenir uniquement des valeurs finies.")
+    if df["day"].isna().any():
+        raise ValueError(f"day : {int(df['day'].isna().sum())} valeur(s) manquante(s).")
+
+    assigned = pd.Series("gap", index=df.index, dtype="string", name="split")
+    gap_seconds = float(gap_minutes) * 60
+    block_seconds = float(block_minutes) * 60
+    rng = np.random.default_rng(seed)
+    for day, day_frame in df.assign(_split_timestamp=timestamps).groupby(
+        "day", sort=True, observed=True
+    ):
+        ordered = day_frame.sort_values("_split_timestamp", kind="stable")
+        values = ordered["_split_timestamp"].to_numpy(dtype=np.float64)
+        day_start = float(values[0])
+        block_ids = np.floor((values - day_start) / block_seconds).astype(np.int64)
+        block_count = int(block_ids[-1]) + 1
+        train_count, val_count, test_count = _block_quotas(
+            block_count, ratios_normalized
+        )
+        attack_blocks: dict[str, set[int]] = {}
+        ordered_labels = ordered["label_multi"].astype(str).to_numpy()
+        for class_name in pd.unique(ordered_labels):
+            if class_name == "BENIGN":
+                continue
+            class_mask = ordered_labels == class_name
+            attack_blocks[str(class_name)] = set(block_ids[class_mask].tolist())
+
+        quotas = (train_count, val_count, test_count)
+        block_labels: np.ndarray | None = None
+        final_labels: np.ndarray | None = None
+        for _ in range(_BLOCK_ASSIGNMENT_ATTEMPTS):
+            permutation = rng.permutation(block_count)
+            candidate = np.empty(block_count, dtype=object)
+            offset = 0
+            for split_name, count in zip(split_names, quotas):
+                candidate[permutation[offset : offset + count]] = split_name
+                offset += count
+            if not _block_assignment_satisfies(
+                candidate, attack_blocks, split_names
+            ):
+                continue
+
+            candidate_flow_labels = candidate[block_ids].copy()
+            boundaries = np.flatnonzero(candidate[:-1] != candidate[1:]) + 1
+            for boundary_block in boundaries:
+                boundary_time = day_start + boundary_block * block_seconds
+                in_gap = np.abs(values - boundary_time) <= gap_seconds
+                candidate_flow_labels[in_gap] = "gap"
+            covered_after_gap = True
+            for class_name, class_block_ids in attack_blocks.items():
+                if len(class_block_ids) < 3:
+                    continue
+                class_mask = ordered_labels == class_name
+                if set(candidate_flow_labels[class_mask]) < set(split_names):
+                    covered_after_gap = False
+                    break
+            if covered_after_gap:
+                block_labels = candidate
+                final_labels = candidate_flow_labels
+                break
+
+        if block_labels is None or final_labels is None:
+            constrained_count = sum(
+                len(blocks) >= 3 for blocks in attack_blocks.values()
+            )
+            raise ValueError(
+                f"Impossible de satisfaire la stratification de {day} après "
+                f"{_BLOCK_ASSIGNMENT_ATTEMPTS} essais "
+                f"({constrained_count} classe(s) contrainte(s))."
+            )
+        assigned.loc[ordered.index] = final_labels
+
+    gaps_by_day = assigned.eq("gap").groupby(df["day"], sort=True, observed=True).sum()
+    return assigned, {str(day): int(count) for day, count in gaps_by_day.items()}
 
 
 def _resolution_by_day(day: str) -> float:

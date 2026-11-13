@@ -10,6 +10,12 @@ split:
   gap_minutes: 5
   mode: count
   min_flows_per_block: 100
+  variants:
+    segment:
+      gap_minutes: 4
+    blocks:
+      block_minutes: 10
+      gap_minutes: 4
 
 seeds:
   split: 42
