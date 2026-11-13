@@ -13,3 +13,12 @@ seeds:
   split: 42
   model: 42
   global: 42
+
+fake:
+  n_days: 5
+  flows_per_day: 2000
+  n_features: 20
+  benign_ratio: 0.95
+  classes: [BENIGN, DoS, PortScan, BruteForce, WebAttack, RareAttack]
+
+raw_subdir: GeneratedLabelledFlows/TrafficLabelling
