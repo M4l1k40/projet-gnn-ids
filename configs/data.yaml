@@ -22,3 +22,9 @@ fake:
   classes: [BENIGN, DoS, PortScan, BruteForce, WebAttack, RareAttack]
 
 raw_subdir: GeneratedLabelledFlows/TrafficLabelling
+
+timestamps:
+  formats:
+    Monday: "%d/%m/%Y %H:%M:%S"
+    other: "%d/%m/%Y %H:%M"
+  pm_hour_threshold: 8
