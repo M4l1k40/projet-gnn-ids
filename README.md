@@ -16,6 +16,16 @@ python -m pip install -r requirements.txt
 
 Pour PyTorch, choisissez au besoin la commande d'installation adaptée à votre matériel et à votre version de CUDA dans la documentation officielle de PyTorch avant d'installer les autres dépendances.
 
+## Données factices
+
+Sous PowerShell, créez l'environnement, installez les dépendances puis générez `data/interim/fake_flows.parquet` :
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m src.data.fake
+```
+
 ## Structure
 
 ```text
