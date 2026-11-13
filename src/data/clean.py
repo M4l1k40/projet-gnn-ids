@@ -87,14 +87,14 @@ def _rendre_rapport(
     colonnes_inf: Counter[tuple[str, str]],
     colonnes_supprimees: list[str],
     features_finales: list[str],
-    chemin_sortie: Path,
+    chemin_sortie_affiche: Path,
 ) -> str:
     etapes = range(1, 11)
     lignes = [
         "# Rapport de nettoyage CIC-IDS2017",
         "",
         f"- Fichiers traités : {len(statistiques)}",
-        f"- Fichier Parquet : `{chemin_sortie}`",
+        f"- Fichier Parquet : `{chemin_sortie_affiche}`",
         f"- Nombre final de lignes : {sum(item['apres'][10] for item in statistiques.values())}",
         f"- Nombre final de features : {len(features_finales)}",
         "",
@@ -167,7 +167,7 @@ def _rendre_rapport(
     toutes_les_classes = sorted(set(classes_avant) | set(classes_apres))
     lignes.extend(
         [
-            "| Classe | Avant suppression des lignes invalides/doublons | Après nettoyage |",
+            "| Classe | Avant étape 4 (lignes non vides, labels nettoyés) | Après étape 10 |",
             "|---|---:|---:|",
         ]
     )
@@ -329,9 +329,11 @@ def clean_raw(
                 sans_timestamp = ~lignes_vides & horodatage_absent
                 stats["vides"] += int(lignes_vides.sum())
                 stats["sans_timestamp"] += int(sans_timestamp.sum())
+                classes_avant.update(
+                    _compter_labels(bloc.loc[~lignes_vides, "label_multi"])
+                )
                 bloc = bloc.loc[~(lignes_vides | horodatage_absent)].copy()
                 stats["apres"][4] += len(bloc)
-                classes_avant.update(_compter_labels(bloc["label_multi"]))
 
                 lignes_inf = np.zeros(len(bloc), dtype=bool)
                 lignes_nan = np.zeros(len(bloc), dtype=bool)
@@ -473,9 +475,13 @@ def clean_raw(
             raise ValueError("Aucune ligne finale à écrire dans le Parquet.")
         chemin_parquet_temporaire.replace(output_path)
 
+    racine_projet = interim_directory.resolve().parents[1]
     if report_path is None:
-        racine_projet = interim_directory.resolve().parents[1]
         report_path = racine_projet / "reports" / "cleaning_report.md"
+    try:
+        chemin_sortie_affiche = output_path.resolve().relative_to(racine_projet)
+    except ValueError:
+        chemin_sortie_affiche = Path(output_path.name)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     rapport = _rendre_rapport(
         statistiques,
@@ -486,7 +492,7 @@ def clean_raw(
         colonnes_inf,
         colonnes_supprimees,
         features_finales,
-        output_path,
+        chemin_sortie_affiche,
     )
     report_path.write_text(rapport, encoding="utf-8")
     return output_path

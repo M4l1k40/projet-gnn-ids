@@ -19,6 +19,7 @@ def resultat_nettoyage(tmp_path: Path) -> tuple[pd.DataFrame, str]:
             "repeat,10.0.0.2,1001,10.0.0.50,443,7/7/2017 10:01,2.5,7,9, Intrusion\u00e9 ",
             "flow-inf,10.0.0.3,1002,10.0.0.50,80,7/7/2017 10:02,inf,7,9,DoS",
             "flow-nan,10.0.0.4,1003,10.0.0.50,80,7/7/2017 10:03,,7,9,PortScan",
+            "flow-no-time,10.0.0.5,1004,10.0.0.50,80,,3.5,7,9,SansTemps",
             "",
             "",
         ]
@@ -68,10 +69,11 @@ def test_rapport_compte_les_filtres_et_signale_les_classes_perdues(
 ) -> None:
     _, rapport = resultat_nettoyage
 
-    assert "| Monday-mini.csv | Monday | 6 | 6 | 6 | 6 | 5 | 3 | 2 | 2 | 2 | 2 | 2 |" in rapport
-    assert "| Monday-mini.csv | 1 | 0 | 1 | 1 | 2 | 1 |" in rapport
+    assert "| Monday-mini.csv | Monday | 7 | 7 | 7 | 7 | 5 | 3 | 2 | 2 | 2 | 2 | 2 |" in rapport
+    assert "| Monday-mini.csv | 1 | 1 | 1 | 1 | 2 | 1 |" in rapport
     assert "| Monday | BENIGN | 1 |" in rapport
     assert "| DoS | 1 | 0 |" in rapport
     assert "| PortScan | 1 | 0 |" in rapport
+    assert "| SansTemps | 1 | 0 |" in rapport
     assert "ATTENTION" in rapport
     assert "Nombre final de features : 1" in rapport
