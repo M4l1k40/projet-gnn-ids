@@ -266,8 +266,10 @@ def _block_assignment_satisfies(
     split_names: tuple[str, ...],
 ) -> bool:
     for blocks in attack_blocks.values():
-        if len(blocks) >= 3 and {
-            str(block_labels[block]) for block in blocks
+        if len(blocks) < 3:
+            continue
+        if {
+            str(block_labels[block_id]) for block_id in blocks
         } != set(split_names):
             return False
     return True
@@ -287,7 +289,8 @@ def assign_split_blocks(
     méthode des plus grands restes. Avec un générateur initialisé par ``seed``,
     une permutation aléatoire des blocs est tirée puis rejetée tant qu'une
     classe d'attaque présente dans au moins trois blocs n'apparaît pas dans
-    chacun des trois splits. Après affectation, toute transition entre deux
+    chacun des trois splits. Cette contrainte s'applique aux blocs affectés,
+    avant le retrait des flux du gap. Après affectation, toute transition entre deux
     blocs de splits différents retire les flux situés à moins de
     ``gap_minutes`` avant ou après la frontière, en les marquant ``gap``.
     """
@@ -345,31 +348,11 @@ def assign_split_blocks(
             for split_name, count in zip(split_names, quotas):
                 candidate[permutation[offset : offset + count]] = split_name
                 offset += count
-            if not _block_assignment_satisfies(
-                candidate, attack_blocks, split_names
-            ):
-                continue
-
-            candidate_flow_labels = candidate[block_ids].copy()
-            boundaries = np.flatnonzero(candidate[:-1] != candidate[1:]) + 1
-            for boundary_block in boundaries:
-                boundary_time = day_start + boundary_block * block_seconds
-                in_gap = np.abs(values - boundary_time) <= gap_seconds
-                candidate_flow_labels[in_gap] = "gap"
-            covered_after_gap = True
-            for class_name, class_block_ids in attack_blocks.items():
-                if len(class_block_ids) < 3:
-                    continue
-                class_mask = ordered_labels == class_name
-                if set(candidate_flow_labels[class_mask]) < set(split_names):
-                    covered_after_gap = False
-                    break
-            if covered_after_gap:
+            if _block_assignment_satisfies(candidate, attack_blocks, split_names):
                 block_labels = candidate
-                final_labels = candidate_flow_labels
                 break
 
-        if block_labels is None or final_labels is None:
+        if block_labels is None:
             constrained_count = sum(
                 len(blocks) >= 3 for blocks in attack_blocks.values()
             )
@@ -378,6 +361,15 @@ def assign_split_blocks(
                 f"{_BLOCK_ASSIGNMENT_ATTEMPTS} essais "
                 f"({constrained_count} classe(s) contrainte(s))."
             )
+        final_labels = block_labels[block_ids].copy()
+        boundaries = np.flatnonzero(block_labels[:-1] != block_labels[1:]) + 1
+        gap_mask = np.zeros(len(values), dtype=bool)
+        for boundary_block in boundaries:
+            boundary_time = day_start + boundary_block * block_seconds
+            first = np.searchsorted(values, boundary_time - gap_seconds, side="left")
+            last = np.searchsorted(values, boundary_time + gap_seconds, side="right")
+            gap_mask[first:last] = True
+        final_labels[gap_mask] = "gap"
         assigned.loc[ordered.index] = final_labels
 
     gaps_by_day = assigned.eq("gap").groupby(df["day"], sort=True, observed=True).sum()
@@ -734,8 +726,260 @@ def run_split_diagnostics(
     return gap_report_path, report_path, table
 
 
+def _variant_class_summary(
+    frame: pd.DataFrame,
+    variant: str,
+    min_flows_per_block: int,
+    *,
+    chronological_overlap: bool,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    train_starts = (
+        frame.loc[frame["split"].eq("train")]
+        .groupby("label_multi", observed=True)["ts_end"]
+        .min()
+        .to_dict()
+    )
+    for label, class_frame in frame.groupby(
+        "label_multi", sort=True, observed=True
+    ):
+        counts = {
+            block: int(class_frame["split"].eq(block).sum()) for block in _BLOCKS
+        }
+        total = sum(counts.values())
+        exploitable = all(
+            counts[block] >= min_flows_per_block
+            for block in ("train", "val", "test")
+        )
+        test_post_train = 0
+        if chronological_overlap and label in train_starts:
+            train_minimum = float(train_starts[label])
+            test_post_train = int(
+                (
+                    class_frame["split"].eq("test")
+                    & class_frame["ts_end"].gt(train_minimum)
+                ).sum()
+            )
+        rows.append(
+            {
+                "variante": variant,
+                "classe": str(label),
+                "train": counts["train"],
+                "train_pct": 100 * counts["train"] / total if total else 0.0,
+                "val": counts["val"],
+                "val_pct": 100 * counts["val"] / total if total else 0.0,
+                "test": counts["test"],
+                "test_pct": 100 * counts["test"] / total if total else 0.0,
+                "gap": counts["gap"],
+                "gap_pct": 100 * counts["gap"] / total if total else 0.0,
+                "exploitable": exploitable,
+                "test_post_train": test_post_train,
+                "test_post_train_pct": (
+                    100 * test_post_train / counts["test"]
+                    if chronological_overlap and counts["test"]
+                    else 0.0 if chronological_overlap else None
+                ),
+            }
+        )
+    return rows
+
+
+def _render_variant_table(rows: list[dict[str, object]]) -> str:
+    headers = [
+        "Classe",
+        "Train (n, %)",
+        "Val (n, %)",
+        "Test (n, %)",
+        "Gap (n, %)",
+        "Exploitable",
+        "Test postérieur à train",
+    ]
+    lines = [
+        "| " + " | ".join(headers) + " |",
+        "|---|---:|---:|---:|---:|:---:|---:|",
+    ]
+    for row in rows:
+        overlap = (
+            f"{int(row['test_post_train'])} "
+            f"({float(row['test_post_train_pct']):.2f} %)"
+            if row["test_post_train_pct"] is not None
+            else "n/a"
+        )
+        lines.append(
+            f"| {row['classe']} "
+            f"| {int(row['train'])} ({float(row['train_pct']):.2f} %) "
+            f"| {int(row['val'])} ({float(row['val_pct']):.2f} %) "
+            f"| {int(row['test'])} ({float(row['test_pct']):.2f} %) "
+            f"| {int(row['gap'])} ({float(row['gap_pct']):.2f} %) "
+            f"| {'oui' if row['exploitable'] else 'non'} | {overlap} |"
+        )
+    return "\n".join(lines)
+
+
+def run_variant_diagnostics(
+    config: dict[str, object] | None = None,
+    *,
+    input_path: str | Path | None = None,
+    reports_dir: str | Path | None = None,
+) -> tuple[Path, Path, pd.DataFrame]:
+    """Compare V1 à 4/5 min, V2 segment et V3 blocs, sans écrire de Parquet."""
+    project_config = load_config() if config is None else config
+    paths = project_config["paths"]
+    split_config = project_config["split"]
+    variants = split_config["variants"]
+    interim = Path(paths["interim"])
+    source_path = Path(input_path) if input_path is not None else interim / "clean.parquet"
+    if reports_dir is None:
+        reports_dir = interim.resolve().parents[1] / "reports"
+    reports_path = Path(reports_dir)
+    reports_path.mkdir(parents=True, exist_ok=True)
+    if not source_path.exists():
+        raise FileNotFoundError(f"Parquet source introuvable : {source_path}.")
+
+    frame = pd.read_parquet(source_path, columns=list(_REQUIRED_INPUT_COLUMNS))
+    min_flows = int(split_config["min_flows_per_block"])
+    ratios = split_config
+    segment_gap = float(variants["segment"]["gap_minutes"])
+    block_gap = float(variants["blocks"]["gap_minutes"])
+    block_minutes = float(variants["blocks"]["block_minutes"])
+    current_gap = float(split_config["gap_minutes"])
+    overlaps = find_attack_window_overlaps(frame)
+
+    variant_definitions = (
+        (
+            "V1_gap4",
+            "V1 — assign_split, gap 4 min (référence)",
+            segment_gap,
+            False,
+        ),
+        ("V1_gap5", "V1 — assign_split, gap 5 min", current_gap, False),
+        ("V2_segment", "V2 — segments d’attaque", segment_gap, True),
+        ("V3_blocks", "V3 — blocs stratifiés", block_gap, True),
+    )
+    results: list[dict[str, object]] = []
+    summary_rows: list[dict[str, object]] = []
+    for variant, title, gap, overlap_metric in variant_definitions:
+        if variant.startswith("V1"):
+            labels, gaps_by_day = assign_split(
+                frame, ratios, gap, mode=str(split_config.get("mode", "count"))
+            )
+        elif variant == "V2_segment":
+            labels, gaps_by_day = assign_split_segment(frame, ratios, gap)
+        else:
+            labels, gaps_by_day = assign_split_blocks(
+                frame,
+                ratios,
+                gap,
+                block_minutes=block_minutes,
+                seed=int(project_config["seeds"]["split"]),
+            )
+        frame["split"] = labels
+        class_rows = _variant_class_summary(
+            frame,
+            variant,
+            min_flows,
+            chronological_overlap=overlap_metric,
+        )
+        results.extend(class_rows)
+        eligible_count = sum(bool(row["exploitable"]) for row in class_rows)
+        benign_total = int(frame["label_multi"].eq("BENIGN").sum())
+        benign_test = int(
+            (
+                frame["label_multi"].eq("BENIGN")
+                & frame["split"].eq("test")
+            ).sum()
+        )
+        summary_rows.append(
+            {
+                "variante": variant,
+                "description": title,
+                "classes_exploitables": eligible_count,
+                "classes_total": len(class_rows),
+                "flows_gap": int(frame["split"].eq("gap").sum()),
+                "benign_test": benign_test,
+                "benign_total": benign_total,
+                "benign_test_pct": (
+                    100 * benign_test / benign_total if benign_total else 0.0
+                ),
+                "gaps_by_day": gaps_by_day,
+            }
+        )
+
+    table = pd.DataFrame(results)
+    csv_path = reports_path / "split_variants.csv"
+    table.to_csv(csv_path, index=False, encoding="utf-8")
+    report_lines = [
+        "# Comparaison des variantes de split",
+        "",
+        f"- Seuil d’exploitabilité : {min_flows} flux minimum dans chacun des blocs train, val et test.",
+        "- Les effectifs et pourcentages sont calculés séparément dans chaque classe.",
+        "- Les labels multiclasse sont laissés inchangés ; aucune classe n’est regroupée.",
+        "- V1 à 4 min sert de référence pour comparer les flux perdus ; V1 à 5 min est affichée séparément.",
+        "- Pour V2/V3, « test postérieur à train » mesure les flux test dont `ts_end` est supérieur au minimum `ts_end` train de la même classe, tous jours confondus.",
+        "- V3 répartit d’abord les blocs pour couvrir les splits des classes présentes dans au moins trois blocs, puis retire les flux des gaps ; le gap peut donc éliminer les derniers flux d’une classe dans un split, ce qui est reflété dans l’exploitabilité mesurée.",
+        "",
+        "## Résumé comparatif",
+        "",
+        "| Variante | Classes exploitables | Flux gap | BENIGN dans test | Part des BENIGN en test |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for row in summary_rows:
+        report_lines.append(
+            f"| {row['description']} | {row['classes_exploitables']}/"
+            f"{row['classes_total']} | {row['flows_gap']} | "
+            f"{row['benign_test']}/{row['benign_total']} | "
+            f"{row['benign_test_pct']:.2f} % |"
+        )
+    for variant, title, _, overlap_metric in variant_definitions:
+        report_lines.extend(
+            [
+                "",
+                f"## {title}",
+                "",
+                _render_variant_table(
+                    [row for row in results if row["variante"] == variant]
+                ),
+            ]
+        )
+        if overlap_metric:
+            report_lines.extend(
+                [
+                    "",
+                    "La dernière colonne donne l’effectif et le pourcentage des flux test dont l’horodatage est postérieur à au moins un flux train de la même classe.",
+                ]
+            )
+    report_lines.extend(["", "## Chevauchements de plages V2", ""])
+    if overlaps:
+        report_lines.extend(
+            [
+                "| Jour | Première plage | Plage chevauchante | Début intersection (epoch s) | Fin intersection (epoch s) | Priorité d’affectation BENIGN |",
+                "|---|---|---|---:|---:|---|",
+            ]
+        )
+        for overlap in overlaps:
+            report_lines.append(
+                f"| {overlap['day']} | {overlap['first_class']} | "
+                f"{overlap['second_class']} | {overlap['overlap_start']:.6f} | "
+                f"{overlap['overlap_end']:.6f} | {overlap['first_class']} |"
+            )
+    else:
+        report_lines.append("Aucun chevauchement entre plages observées d’attaques.")
+    report_path = reports_path / "split_variants.md"
+    report_path.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
+
+    print("Récapitulatif des variantes :")
+    print("| Variante | Classes exploitables | Flux gap | % BENIGN en test |")
+    print("|---|---:|---:|---:|")
+    for row in summary_rows:
+        print(
+            f"| {row['variante']} | {row['classes_exploitables']}/"
+            f"{row['classes_total']} | {row['flows_gap']} | "
+            f"{row['benign_test_pct']:.2f} % |"
+        )
+    return report_path, csv_path, table
+
+
 if __name__ == "__main__":
-    gap_report, class_report, class_table = run_split_diagnostics()
-    print(f"Rapport de gap : {gap_report}")
-    print(f"Rapport de classes : {class_report}")
-    print(f"CSV des classes : {class_report.with_suffix('.csv')}")
+    report, csv_report, _ = run_variant_diagnostics()
+    print(f"Rapport comparatif : {report}")
+    print(f"CSV comparatif : {csv_report}")
