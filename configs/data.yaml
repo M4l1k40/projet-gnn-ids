@@ -16,6 +16,17 @@ split:
     blocks:
       block_minutes: 10
       gap_minutes: 4
+  final:
+    variant: segment
+    gap_minutes: 3
+    min_flows_per_block: 50
+
+normalization:
+  method: standard
+
+leakage:
+  test_sample: 50000
+  train_sample: 300000
 
 seeds:
   split: 42
