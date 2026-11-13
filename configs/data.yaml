@@ -8,6 +8,8 @@ split:
   validation: 0.15
   test: 0.25
   gap_minutes: 5
+  mode: count
+  min_flows_per_block: 100
 
 seeds:
   split: 42
