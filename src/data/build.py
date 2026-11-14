@@ -67,6 +67,13 @@ def _class_counts(processed_dir: Path) -> dict[str, Counter[str]]:
     return result
 
 
+def _meta_has_seen_flag(meta_path: Path) -> bool:
+    return (
+        meta_path.exists()
+        and "seen_in_train" in pq.ParquetFile(meta_path).schema_arrow.names
+    )
+
+
 def _raw_data_limits(clean_path: Path) -> tuple[int, int, int]:
     parquet_file = pq.ParquetFile(clean_path)
     files_by_day: dict[str, str] = {}
@@ -149,10 +156,19 @@ def build_data_card(
     final_split = ratios["final"]
     leakage_csv = report_dir / "leakage_report.csv"
     exact_matches = None
+    strict_test_count = None
     if leakage_csv.exists():
         leakage = pd.read_csv(leakage_csv)
         exact = leakage.loc[leakage["analyse"].eq("identique_test_train")]
         exact_matches = int(pd.to_numeric(exact["flux_identiques"]).sum())
+        if {"split", "flux_test_strict"}.issubset(leakage.columns):
+            strict_rows = leakage.loc[
+                leakage["analyse"].eq("seen_in_train")
+                & leakage["split"].eq("test")
+            ]
+            strict_test_count = int(
+                pd.to_numeric(strict_rows["flux_test_strict"]).sum()
+            )
 
     lines = [
         "# Fiche des données finales",
@@ -195,6 +211,19 @@ def build_data_card(
         + ", ".join(classes["too_rare_excluded"])
         + ". Les valeurs `label_multi` du Parquet restent intactes.",
         "",
+        "## Test strict",
+        "",
+        "- `meta.parquet` porte le booléen `seen_in_train` : il est nul pour train et, "
+        "pour val/test, vrai si un vecteur de features arrondi à 6 décimales existe dans "
+        "train pour la même classe.",
+        "- Pour une évaluation stricte, filtrer le test sur `seen_in_train == false` ; "
+        "cela exclut les doublons exacts intra-classe présents dans train.",
+        (
+            f"- Flux test strict : {strict_test_count}."
+            if strict_test_count is not None
+            else "- Le nombre de flux test strict est indiqué dans `leakage_report.md`."
+        ),
+        "",
         "## Paramètres et limites connues",
         "",
         f"- Split final : `{final_split['variant']}` (V2), gap {final_split['gap_minutes']:g} min ; "
@@ -233,6 +262,7 @@ def build_pipeline(
     reports = project_root / "reports"
     models = project_root / "models"
     classes_path = project_root / "configs" / "classes.yaml"
+    meta_path = processed / "meta.parquet"
 
     _run_stage(
         "clean",
@@ -272,22 +302,24 @@ def build_pipeline(
         lambda: normalize_final_data(project_config),
         force=force,
     )
+    needs_seen_refresh = not _meta_has_seen_flag(meta_path)
     _run_stage(
         "fuite",
         [
             reports / "leakage_report.md",
             reports / "leakage_report.csv",
             reports / "leakage_histogram.png",
+            meta_path,
         ],
         lambda: run_leakage_diagnostics(project_config),
-        force=force,
+        force=force or needs_seen_refresh,
     )
     data_card = reports / "data_card.md"
     _run_stage(
         "fiche de données",
         [data_card],
         lambda: build_data_card(project_config),
-        force=force,
+        force=force or needs_seen_refresh,
     )
     return {
         "train": processed / "train.parquet",

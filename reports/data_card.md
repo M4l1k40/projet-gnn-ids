@@ -197,6 +197,12 @@ Les pourcentages sont calculés dans chaque classe, sur les flux conservés.
 - Binary-only (conservées avec `label_bin=1`) : DDoS, DoS GoldenEye, DoS Hulk, DoS Slowhttptest, PortScan, Web Attack - XSS.
 - Exclues des expériences : Heartbleed, Infiltration, Web Attack - Sql Injection. Les valeurs `label_multi` du Parquet restent intactes.
 
+## Test strict
+
+- `meta.parquet` porte le booléen `seen_in_train` : il est nul pour train et, pour val/test, vrai si un vecteur de features arrondi à 6 décimales existe dans train pour la même classe.
+- Pour une évaluation stricte, filtrer le test sur `seen_in_train == false` ; cela exclut les doublons exacts intra-classe présents dans train.
+- Flux test strict : 682136.
+
 ## Paramètres et limites connues
 
 - Split final : `segment` (V2), gap 3 min ; ratios train/val/test 60%/15%/25%.

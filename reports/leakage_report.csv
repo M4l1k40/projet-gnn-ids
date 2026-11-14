@@ -1,37 +1,67 @@
-analyse,classe,flux_test,flux_train,effectif_echantillon_test,effectif_echantillon_train,flux_identiques,pourcentage_identique,distance_q01,distance_q05,distance_q25,distance_q50,pourcentage_distance_nulle
-identique_test_train,BENIGN,830584.0,1181398.0,,,177387.0,21.35690068674571,,,,,
-identique_test_train,Bot,476.0,1174.0,,,0.0,0.0,,,,,
-identique_test_train,DDoS,12501.0,76815.0,,,8.0,0.06399488040956723,,,,,
-identique_test_train,DoS GoldenEye,0.0,6176.0,,,0.0,0.0,,,,,
-identique_test_train,DoS Hulk,14152.0,138074.0,,,2525.0,17.84200113058225,,,,,
-identique_test_train,DoS Slowhttptest,1205.0,3300.0,,,0.0,0.0,,,,,
-identique_test_train,DoS slowloris,714.0,3478.0,,,0.0,0.0,,,,,
-identique_test_train,FTP-Patator,1579.0,4764.0,,,480.0,30.39898670044332,,,,,
-identique_test_train,Heartbleed,0.0,7.0,,,0.0,0.0,,,,,
-identique_test_train,Infiltration,9.0,22.0,,,0.0,0.0,,,,,
-identique_test_train,PortScan,20046.0,95698.0,,,19699.0,98.2689813429113,,,,,
-identique_test_train,SSH-Patator,1192.0,3539.0,,,541.0,45.38590604026846,,,,,
-identique_test_train,Web Attack - Brute Force,260.0,905.0,,,8.0,3.076923076923077,,,,,
-identique_test_train,Web Attack - Sql Injection,0.0,13.0,,,0.0,0.0,,,,,
-identique_test_train,Web Attack - XSS,66.0,392.0,,,0.0,0.0,,,,,
-test_vers_train,BENIGN,,,47043.0,300000.0,,,0.0,0.0,1.457557574499931e-05,0.000976396820170636,12.480071424016325
-test_vers_train,Bot,,,27.0,300000.0,,,1.1443650729791145e-05,1.4920476528757051e-05,2.8182198279809623e-05,4.410369784100352e-05,0.0
-test_vers_train,DDoS,,,708.0,300000.0,,,1.1065325057188474e-05,5.115212606659241e-05,0.0002242620222293588,0.0007541584138654,0.0
-test_vers_train,DoS Hulk,,,802.0,300000.0,,,0.0,0.0,0.00013225497625419543,0.0018078003522539721,17.456359102244388
-test_vers_train,DoS Slowhttptest,,,68.0,300000.0,,,1.3009767042677482e-05,2.853341444100177e-05,0.00015042794249289895,0.00043415061731855945,0.0
-test_vers_train,DoS slowloris,,,40.0,300000.0,,,3.919885433623472e-06,1.171994397316998e-05,0.006145893943178372,3.2268072182084735,0.0
-test_vers_train,FTP-Patator,,,89.0,300000.0,,,0.0,0.0,1.4576552069386753e-06,0.0019065128527863081,15.730337078651685
-test_vers_train,Infiltration,,,1.0,300000.0,,,0.5688547056914661,0.5688547056914661,0.5688547056914661,0.5688547056914661,0.0
-test_vers_train,PortScan,,,1135.0,300000.0,,,0.0,0.0,0.0,0.0,98.14977973568281
-test_vers_train,SSH-Patator,,,68.0,300000.0,,,0.0,0.0,0.0,0.0,52.94117647058823
-test_vers_train,Web Attack - Brute Force,,,15.0,300000.0,,,1.0287403305397914e-05,1.3502090556482015e-05,7.912306589069673e-05,0.0002045409361210943,0.0
-test_vers_train,Web Attack - XSS,,,4.0,300000.0,,,0.00013059835142731257,0.00016853784765263769,0.0003582353287792632,0.0006388590872998235,0.0
-val_vers_train,BENIGN,,,49418.0,300000.0,,,0.0,0.0,1.0260760945234987e-05,0.0008446574211120605,14.557448702901777
-val_vers_train,Bot,,,35.0,300000.0,,,0.0,0.0,1.2978046014032797e-05,3.4116764616901996e-05,22.857142857142858
-val_vers_train,DoS slowloris,,,42.0,300000.0,,,0.0,0.0,4.327963062509185e-06,9.509614473470045e-06,14.285714285714286
-val_vers_train,FTP-Patator,,,270.0,300000.0,,,0.0,0.0,1.0930029668980317e-06,0.0027116810694842635,18.51851851851852
-val_vers_train,Heartbleed,,,1.0,300000.0,,,3.681674756131145,3.681674756131145,3.681674756131145,3.681674756131145,0.0
-val_vers_train,Infiltration,,,1.0,300000.0,,,5.932380727163335,5.932380727163335,5.932380727163335,5.932380727163335,0.0
-val_vers_train,SSH-Patator,,,197.0,300000.0,,,0.0,0.0,0.0,0.002035897170414882,46.7005076142132
-val_vers_train,Web Attack - Brute Force,,,35.0,300000.0,,,4.503382074625647e-05,7.785492369452555e-05,0.00018877666611599053,0.00042137126977256624,0.0
-val_vers_train,Web Attack - XSS,,,1.0,300000.0,,,0.0003312166015039315,0.0003312166015039315,0.0003312166015039315,0.0003312166015039315,0.0
+analyse,classe,flux_test,flux_train,effectif_echantillon_test,effectif_echantillon_train,flux_identiques,pourcentage_identique,distance_q01,distance_q05,distance_q25,distance_q50,pourcentage_distance_nulle,split,effectif,flux_seen_in_train,pourcentage_seen_in_train,flux_test_strict
+identique_test_train,BENIGN,830584.0,1181398.0,,,177387.0,21.35690068674571,,,,,,,,,,
+identique_test_train,Bot,476.0,1174.0,,,0.0,0.0,,,,,,,,,,
+identique_test_train,DDoS,12501.0,76815.0,,,8.0,0.06399488040956723,,,,,,,,,,
+identique_test_train,DoS GoldenEye,0.0,6176.0,,,0.0,0.0,,,,,,,,,,
+identique_test_train,DoS Hulk,14152.0,138074.0,,,2525.0,17.84200113058225,,,,,,,,,,
+identique_test_train,DoS Slowhttptest,1205.0,3300.0,,,0.0,0.0,,,,,,,,,,
+identique_test_train,DoS slowloris,714.0,3478.0,,,0.0,0.0,,,,,,,,,,
+identique_test_train,FTP-Patator,1579.0,4764.0,,,480.0,30.39898670044332,,,,,,,,,,
+identique_test_train,Heartbleed,0.0,7.0,,,0.0,0.0,,,,,,,,,,
+identique_test_train,Infiltration,9.0,22.0,,,0.0,0.0,,,,,,,,,,
+identique_test_train,PortScan,20046.0,95698.0,,,19699.0,98.2689813429113,,,,,,,,,,
+identique_test_train,SSH-Patator,1192.0,3539.0,,,541.0,45.38590604026846,,,,,,,,,,
+identique_test_train,Web Attack - Brute Force,260.0,905.0,,,8.0,3.076923076923077,,,,,,,,,,
+identique_test_train,Web Attack - Sql Injection,0.0,13.0,,,0.0,0.0,,,,,,,,,,
+identique_test_train,Web Attack - XSS,66.0,392.0,,,0.0,0.0,,,,,,,,,,
+seen_in_train,BENIGN,,,,,,,,,,,,val,149947.0,35067.0,23.3862631463117,
+seen_in_train,Bot,,,,,,,,,,,,val,108.0,38.0,35.18518518518518,
+seen_in_train,DDoS,,,,,,,,,,,,val,0.0,0.0,0.0,
+seen_in_train,DoS GoldenEye,,,,,,,,,,,,val,0.0,0.0,0.0,
+seen_in_train,DoS Hulk,,,,,,,,,,,,val,0.0,0.0,0.0,
+seen_in_train,DoS Slowhttptest,,,,,,,,,,,,val,0.0,0.0,0.0,
+seen_in_train,DoS slowloris,,,,,,,,,,,,val,129.0,21.0,16.27906976744186,
+seen_in_train,FTP-Patator,,,,,,,,,,,,val,820.0,282.0,34.390243902439025,
+seen_in_train,Heartbleed,,,,,,,,,,,,val,1.0,0.0,0.0,
+seen_in_train,Infiltration,,,,,,,,,,,,val,4.0,0.0,0.0,
+seen_in_train,PortScan,,,,,,,,,,,,val,0.0,0.0,0.0,
+seen_in_train,SSH-Patator,,,,,,,,,,,,val,597.0,288.0,48.24120603015076,
+seen_in_train,Web Attack - Brute Force,,,,,,,,,,,,val,105.0,6.0,5.714285714285714,
+seen_in_train,Web Attack - Sql Injection,,,,,,,,,,,,val,0.0,0.0,0.0,
+seen_in_train,Web Attack - XSS,,,,,,,,,,,,val,3.0,0.0,0.0,
+seen_in_train,BENIGN,,,,,,,,,,,,test,830584.0,177387.0,21.35690068674571,653197.0
+seen_in_train,Bot,,,,,,,,,,,,test,476.0,0.0,0.0,476.0
+seen_in_train,DDoS,,,,,,,,,,,,test,12501.0,8.0,0.06399488040956723,12493.0
+seen_in_train,DoS GoldenEye,,,,,,,,,,,,test,0.0,0.0,0.0,0.0
+seen_in_train,DoS Hulk,,,,,,,,,,,,test,14152.0,2525.0,17.84200113058225,11627.0
+seen_in_train,DoS Slowhttptest,,,,,,,,,,,,test,1205.0,0.0,0.0,1205.0
+seen_in_train,DoS slowloris,,,,,,,,,,,,test,714.0,0.0,0.0,714.0
+seen_in_train,FTP-Patator,,,,,,,,,,,,test,1579.0,480.0,30.39898670044332,1099.0
+seen_in_train,Heartbleed,,,,,,,,,,,,test,0.0,0.0,0.0,0.0
+seen_in_train,Infiltration,,,,,,,,,,,,test,9.0,0.0,0.0,9.0
+seen_in_train,PortScan,,,,,,,,,,,,test,20046.0,19699.0,98.2689813429113,347.0
+seen_in_train,SSH-Patator,,,,,,,,,,,,test,1192.0,541.0,45.38590604026846,651.0
+seen_in_train,Web Attack - Brute Force,,,,,,,,,,,,test,260.0,8.0,3.076923076923077,252.0
+seen_in_train,Web Attack - Sql Injection,,,,,,,,,,,,test,0.0,0.0,0.0,0.0
+seen_in_train,Web Attack - XSS,,,,,,,,,,,,test,66.0,0.0,0.0,66.0
+test_vers_train,BENIGN,,,47043.0,300000.0,,,0.0,0.0,1.457557574499931e-05,0.000976396820170636,12.480071424016325,,,,,
+test_vers_train,Bot,,,27.0,300000.0,,,1.1443650729791145e-05,1.4920476528757051e-05,2.8182198279809623e-05,4.410369784100352e-05,0.0,,,,,
+test_vers_train,DDoS,,,708.0,300000.0,,,1.1065325057188474e-05,5.115212606659241e-05,0.0002242620222293588,0.0007541584138654,0.0,,,,,
+test_vers_train,DoS Hulk,,,802.0,300000.0,,,0.0,0.0,0.00013225497625419543,0.0018078003522539721,17.456359102244388,,,,,
+test_vers_train,DoS Slowhttptest,,,68.0,300000.0,,,1.3009767042677482e-05,2.853341444100177e-05,0.00015042794249289895,0.00043415061731855945,0.0,,,,,
+test_vers_train,DoS slowloris,,,40.0,300000.0,,,3.919885433623472e-06,1.171994397316998e-05,0.006145893943178372,3.2268072182084735,0.0,,,,,
+test_vers_train,FTP-Patator,,,89.0,300000.0,,,0.0,0.0,1.4576552069386753e-06,0.0019065128527863081,15.730337078651685,,,,,
+test_vers_train,Infiltration,,,1.0,300000.0,,,0.5688547056914661,0.5688547056914661,0.5688547056914661,0.5688547056914661,0.0,,,,,
+test_vers_train,PortScan,,,1135.0,300000.0,,,0.0,0.0,0.0,0.0,98.14977973568281,,,,,
+test_vers_train,SSH-Patator,,,68.0,300000.0,,,0.0,0.0,0.0,0.0,52.94117647058823,,,,,
+test_vers_train,Web Attack - Brute Force,,,15.0,300000.0,,,1.0287403305397914e-05,1.3502090556482015e-05,7.912306589069673e-05,0.0002045409361210943,0.0,,,,,
+test_vers_train,Web Attack - XSS,,,4.0,300000.0,,,0.00013059835142731257,0.00016853784765263769,0.0003582353287792632,0.0006388590872998235,0.0,,,,,
+val_vers_train,BENIGN,,,49418.0,300000.0,,,0.0,0.0,1.0260760945234987e-05,0.0008446574211120605,14.557448702901777,,,,,
+val_vers_train,Bot,,,35.0,300000.0,,,0.0,0.0,1.2978046014032797e-05,3.4116764616901996e-05,22.857142857142858,,,,,
+val_vers_train,DoS slowloris,,,42.0,300000.0,,,0.0,0.0,4.327963062509185e-06,9.509614473470045e-06,14.285714285714286,,,,,
+val_vers_train,FTP-Patator,,,270.0,300000.0,,,0.0,0.0,1.0930029668980317e-06,0.0027116810694842635,18.51851851851852,,,,,
+val_vers_train,Heartbleed,,,1.0,300000.0,,,3.681674756131145,3.681674756131145,3.681674756131145,3.681674756131145,0.0,,,,,
+val_vers_train,Infiltration,,,1.0,300000.0,,,5.932380727163335,5.932380727163335,5.932380727163335,5.932380727163335,0.0,,,,,
+val_vers_train,SSH-Patator,,,197.0,300000.0,,,0.0,0.0,0.0,0.002035897170414882,46.7005076142132,,,,,
+val_vers_train,Web Attack - Brute Force,,,35.0,300000.0,,,4.503382074625647e-05,7.785492369452555e-05,0.00018877666611599053,0.00042137126977256624,0.0,,,,,
+val_vers_train,Web Attack - XSS,,,1.0,300000.0,,,0.0003312166015039315,0.0003312166015039315,0.0003312166015039315,0.0003312166015039315,0.0,,,,,

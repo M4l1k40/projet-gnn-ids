@@ -5,6 +5,43 @@
 - Les vecteurs identiques sont comparés après arrondi à 6 décimales et uniquement au sein de la même classe.
 - Les distances sont euclidiennes dans l’espace des features normalisées ; les voisins sont recherchés dans l’échantillon train stratifié.
 
+## Drapeau seen_in_train et test strict
+
+`meta.parquet` contient `seen_in_train` : la valeur est nulle pour train, et vaut vrai pour val/test si un vecteur arrondi à 6 décimales existe dans train pour la même classe. Les lignes false du test constituent le test strict.
+
+| Split | Classe | Effectif | seen_in_train | Part | Flux test strict |
+|---|---|---:|---:|---:|---:|
+| val | BENIGN | 149947 | 35067 | 23.3863 % | — |
+| val | Bot | 108 | 38 | 35.1852 % | — |
+| val | DDoS | 0 | 0 | 0.0000 % | — |
+| val | DoS GoldenEye | 0 | 0 | 0.0000 % | — |
+| val | DoS Hulk | 0 | 0 | 0.0000 % | — |
+| val | DoS Slowhttptest | 0 | 0 | 0.0000 % | — |
+| val | DoS slowloris | 129 | 21 | 16.2791 % | — |
+| val | FTP-Patator | 820 | 282 | 34.3902 % | — |
+| val | Heartbleed | 1 | 0 | 0.0000 % | — |
+| val | Infiltration | 4 | 0 | 0.0000 % | — |
+| val | PortScan | 0 | 0 | 0.0000 % | — |
+| val | SSH-Patator | 597 | 288 | 48.2412 % | — |
+| val | Web Attack - Brute Force | 105 | 6 | 5.7143 % | — |
+| val | Web Attack - Sql Injection | 0 | 0 | 0.0000 % | — |
+| val | Web Attack - XSS | 3 | 0 | 0.0000 % | — |
+| test | BENIGN | 830584 | 177387 | 21.3569 % | 653197 |
+| test | Bot | 476 | 0 | 0.0000 % | 476 |
+| test | DDoS | 12501 | 8 | 0.0640 % | 12493 |
+| test | DoS GoldenEye | 0 | 0 | 0.0000 % | 0 |
+| test | DoS Hulk | 14152 | 2525 | 17.8420 % | 11627 |
+| test | DoS Slowhttptest | 1205 | 0 | 0.0000 % | 1205 |
+| test | DoS slowloris | 714 | 0 | 0.0000 % | 714 |
+| test | FTP-Patator | 1579 | 480 | 30.3990 % | 1099 |
+| test | Heartbleed | 0 | 0 | 0.0000 % | 0 |
+| test | Infiltration | 9 | 0 | 0.0000 % | 9 |
+| test | PortScan | 20046 | 19699 | 98.2690 % | 347 |
+| test | SSH-Patator | 1192 | 541 | 45.3859 % | 651 |
+| test | Web Attack - Brute Force | 260 | 8 | 3.0769 % | 252 |
+| test | Web Attack - Sql Injection | 0 | 0 | 0.0000 % | 0 |
+| test | Web Attack - XSS | 66 | 0 | 0.0000 % | 66 |
+
 ## Vecteurs test identiques au train par classe
 
 | Classe | Flux test | Flux train même classe | Vecteurs identiques | Part du test |
