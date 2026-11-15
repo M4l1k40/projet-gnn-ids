@@ -229,12 +229,15 @@ Les pourcentages sont calculés dans chaque classe, sur les flux conservés.
 
 | Pli E5 | Classes de test absentes du train |
 |---|---|
-| Tuesday / bruteforce | FTP-Patator, SSH-Patator |
-| Wednesday / dos | DDoS, DoS GoldenEye, DoS Hulk, DoS Slowhttptest, DoS slowloris |
-| Thursday / web | Web Attack - Brute Force, Web Attack - Sql Injection, Web Attack - XSS |
-| Friday | Bot, DDoS, PortScan |
-| recon | PortScan |
-| bot | Bot |
+| day_Tuesday | FTP-Patator, SSH-Patator |
+| day_Wednesday | DoS GoldenEye, DoS Hulk, DoS Slowhttptest, DoS slowloris |
+| day_Thursday | Web Attack - Brute Force, Web Attack - Sql Injection, Web Attack - XSS |
+| day_Friday | Bot, DDoS, PortScan |
+| family_bruteforce | FTP-Patator, SSH-Patator |
+| family_dos | DDoS, DoS GoldenEye, DoS Hulk, DoS Slowhttptest, DoS slowloris |
+| family_web | Web Attack - Brute Force, Web Attack - Sql Injection, Web Attack - XSS |
+| family_recon | PortScan |
+| family_bot | Bot |
 
 ### Non traitées
 
