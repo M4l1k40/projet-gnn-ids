@@ -216,3 +216,29 @@ Les pourcentages sont calculés dans chaque classe, sur les flux conservés.
 - Le split V2 n’est pas chronologique globalement ; les frontières sont définies par classe et jour.
 - 277424 flux marqués gap ont été supprimés des splits.
 - Fuite intra-attaque observée : 200648 vecteurs test identiques au train dans la même classe ; voir `leakage_report.md`.
+
+## Limites traitées / non traitées
+
+### Traitées
+
+- L'audit de sensibilité compare chaque règle CNS 2022 aux labels d'origine sans les réécrire : 364551 flux sur 2827677 (12,8922 %) diffèrent textuellement. Les écarts incluent les changements de casse et de nomenclature.
+- Les fenêtres de l'audit sont évaluées sur le début du flux avec le décalage local vers UTC de +3 h. Les catégories `Attempted` sont conservées comme résultats de l'audit, pas comme corrections.
+- Les indicateurs de redondance couvrent les doublons de vecteurs et les conflits de classe sans supprimer de flux. Le contrôle test/vecteur identique dans le train et de même classe reste à 200648.
+- La CV à cinq plis purge les voisins temporels du même jour et de la même classe autour des validations. Aucune classe n'est absente d'une validation d'après `cv_folds.md`.
+- Les neuf plis P2/E5 (quatre jours et cinq familles) isolent les attaques de la journée ou famille tenue à l'écart, purgent les voisins train/val et ajustent un scaler distinct sur le train non purgé. Les BENIGN du lundi restent en train; `p2_folds.parquet` ne contient que les rôles, sans features.
+
+| Pli E5 | Classes de test absentes du train |
+|---|---|
+| Tuesday / bruteforce | FTP-Patator, SSH-Patator |
+| Wednesday / dos | DDoS, DoS GoldenEye, DoS Hulk, DoS Slowhttptest, DoS slowloris |
+| Thursday / web | Web Attack - Brute Force, Web Attack - Sql Injection, Web Attack - XSS |
+| Friday | Bot, DDoS, PortScan |
+| recon | PortScan |
+| bot | Bot |
+
+### Non traitées
+
+- L'audit ne répare pas les labels. Le notebook consulté ne spécifie pas de règle d'attaque pour Monday, et son seuil historique de reconstruction AM/PM diffère du parseur courant; les cas de bord concernés restent incertains.
+- Les erreurs d'extraction de flux (paquets mal ordonnés ou dupliqués) ne peuvent pas être évaluées à partir des seuls CSV/Parquet; elles nécessitent les PCAP et un CICFlowMeter modifié.
+- Les flags de redondance signalent les conflits sans arbitrer le bon label, et les vecteurs répétés ne sont pas dédupliqués automatiquement.
+- Les classes d'attaque absentes du train d'un pli E5 sont un résultat intentionnel de la généralisation à une attaque/journée ou famille non vue; ces scores mesurent un changement de distribution, pas une validation IID. Les classes rares Heartbleed et Infiltration sont exclues de P2/E5 selon `attack_families.yaml`.
