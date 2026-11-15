@@ -28,6 +28,7 @@ python -m venv .venv
 
 ## Pipeline données
 
+Guide complet : [docs/DONNEES.md](docs/DONNEES.md).
 Depuis la racine du dépôt sous PowerShell, la commande unique exécute nettoyage, horodatages, split final,
 normalisation et diagnostic de fuite. Les étapes dont toutes les sorties existent sont ignorées ; `--force`
 les régénère.
