@@ -50,16 +50,16 @@ Les scalers P2 non versionnés sont sous [models/p2/](../models/p2/) :
 [models/p2/family_recon.joblib](../models/p2/family_recon.joblib) et
 [models/p2/family_bot.joblib](../models/p2/family_bot.joblib).
 
-### Obtenir les donn?es pr?tes ? l'emploi
+### Obtenir les données prêtes à l'emploi
 
-Les donn?es ne sont pas versionn?es (`.gitignore`) et ne sont
-partag?es nulle part : chacun les r?g?n?re ? partir du zip brut
+Les données ne sont pas versionnées (`.gitignore`) et ne sont
+partagées nulle part : chacun les régénère à partir du zip brut
 CIC-IDS2017 (`GeneratedLabelledFlows.zip`). Les graines sont fixes (42),
-donc les chiffres de contr?le doivent ?tre identiques chez tout le monde.
+donc les chiffres de contrôle doivent être identiques chez tout le monde.
 
-1. D?compresser le zip pour obtenir les 8 CSV dans
+1. Décompresser le zip pour obtenir les 8 CSV dans
    `data/raw/GeneratedLabelledFlows/TrafficLabelling/`.
-2. Depuis la racine du d?p?t (PowerShell), lancer dans cet ordre :
+2. Depuis la racine du dépôt (PowerShell), lancer dans cet ordre :
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -76,14 +76,14 @@ python -m pytest -q
 `classes.yaml`, le scaler et le rapport de fuite. Les quatre commandes
 suivantes produisent `folds.parquet`, `p2_folds.parquet` avec
 `models/p2/*.joblib`, `label_audit.parquet` et `redundancy_flags.parquet`.
-Dur?e de `build --force` : non mesur?e.
+Durée de `build --force` : non mesurée.
 
-Chiffres de contr?le : 2 827 677 lignes dans `clean.parquet` ;
+Chiffres de contrôle : 2 827 677 lignes dans `clean.parquet` ;
 train 1 515 755, val 151 714, test 882 784 ; 277 424 flux en gap ;
-200 648 vecteurs test identiques au train dans la m?me classe.
+200 648 vecteurs test identiques au train dans la même classe.
 
-Les empreintes SHA-256 des Parquet ne sont pas compar?es : deux
-r?g?n?rations peuvent diff?rer octet par octet sans diff?rer en contenu.
+Les empreintes SHA-256 des Parquet ne sont pas comparées : deux
+régénérations peuvent différer octet par octet sans différer en contenu.
 Les invariants de `verify_final` et de pytest font foi.
 
 
@@ -327,7 +327,7 @@ code consultés.
 | Symptôme | Cause probable et solution |
 |---|---|
 | `ModuleNotFoundError: No module named 'src'` | Le terminal n'est pas à la racine du dépôt. Revenir au dossier qui contient `src/` et `configs/`. |
-| `FileNotFoundError` sur un Parquet | Les artefacts ne sont pas versionnés. R?g?n?rer les donn?es (section 2), puis vérifier leur emplacement. |
+| `FileNotFoundError` sur un Parquet | Les artefacts ne sont pas versionnés. Régénérer les données (section 2), puis vérifier leur emplacement. |
 | Mémoire insuffisante au chargement | Ne pas charger des colonnes inutiles : passer `columns=feature_names()` et lire un split à la fois avec `load_split`. |
 | Chemin Windows introuvable sous WSL, ou inversement | Utiliser le chemin du système courant ; sous WSL, le lecteur Windows apparaît sous `/mnt/` suivi de sa lettre. |
 | `KeyError` sur une feature ou un label | Lire les features via `feature_names()` et les classes via `multiclass_classes()` plutôt que de recopier les noms. |
