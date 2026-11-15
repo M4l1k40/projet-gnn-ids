@@ -47,3 +47,7 @@ timestamps:
     Monday: "%d/%m/%Y %H:%M:%S"
     other: "%d/%m/%Y %H:%M"
   pm_hour_threshold: 8
+
+cv:
+  k: 5
+  purge_minutes: 3
