@@ -26,6 +26,23 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m src.data.fake
 ```
 
+## Pipeline données
+
+Depuis la racine du dépôt sous PowerShell, la commande unique exécute nettoyage, horodatages, split final,
+normalisation et diagnostic de fuite. Les étapes dont toutes les sorties existent sont ignorées ; `--force`
+les régénère.
+
+Sorties principales : `data/interim/clean_raw.parquet`, `data/interim/clean.parquet`,
+`data/processed/{train,val,test,meta}.parquet`, `configs/classes.yaml`, `models/scaler.joblib`,
+`models/features.json`, `reports/leakage_report.{md,csv}`, `reports/leakage_histogram.png` et
+`reports/data_card.md`.
+
+```powershell
+python -m pip install -r requirements.txt
+python -m src.data.build
+python -m src.data.build --force
+```
+
 ## Structure
 
 ```text

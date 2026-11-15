@@ -1,0 +1,18 @@
+multiclass_classes:
+- BENIGN
+- Bot
+- DoS slowloris
+- FTP-Patator
+- SSH-Patator
+- Web Attack - Brute Force
+binary_only:
+- DDoS
+- DoS GoldenEye
+- DoS Hulk
+- DoS Slowhttptest
+- PortScan
+- Web Attack - XSS
+too_rare_excluded:
+- Heartbleed
+- Infiltration
+- Web Attack - Sql Injection

@@ -20,6 +20,7 @@ _REQUIRED_INPUT_COLUMNS = (
     "Flow Duration",
 )
 _GAP_MARGIN_SECONDS = 60.0
+_BLOCK_ASSIGNMENT_ATTEMPTS = 20_000
 
 
 def _normalize_ratios(ratios: Mapping[str, float]) -> tuple[float, float, float]:
@@ -108,6 +109,271 @@ def assign_split(
         lost_by_day[str(day)] = int(np.count_nonzero(labels == "gap"))
 
     return assigned, dict(lost_by_day)
+
+
+def _labels_from_cutpoints(
+    values: np.ndarray,
+    t1: float,
+    t2: float,
+    gap_seconds: float,
+) -> np.ndarray:
+    labels = np.full(len(values), "gap", dtype=object)
+    labels[values <= t1] = "train"
+    if gap_seconds == 0:
+        labels[(values > t1) & (values <= t2)] = "val"
+        labels[values > t2] = "test"
+    else:
+        labels[(values >= t1 + gap_seconds) & (values <= t2)] = "val"
+        labels[values >= t2 + gap_seconds] = "test"
+    return labels
+
+
+def find_attack_window_overlaps(df: pd.DataFrame) -> list[dict[str, object]]:
+    """Liste les intersections inclusives entre plages de classes d’attaque par jour."""
+    required = {"day", "ts_end", "label_multi"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError("Colonnes requises absentes : " + ", ".join(sorted(missing)))
+    attacks = df.loc[df["label_multi"].notna() & df["label_multi"].ne("BENIGN")]
+    overlaps: list[dict[str, object]] = []
+    for day, day_frame in attacks.groupby("day", sort=True, observed=True):
+        windows = (
+            day_frame.groupby("label_multi", sort=True, observed=True)["ts_end"]
+            .agg(["min", "max"])
+            .sort_values(["min", "max"], kind="stable")
+        )
+        entries = [
+            (str(label), float(row["min"]), float(row["max"]))
+            for label, row in windows.iterrows()
+        ]
+        for left_index, (left_label, left_start, left_end) in enumerate(entries):
+            for right_label, right_start, right_end in entries[left_index + 1 :]:
+                overlap_start = max(left_start, right_start)
+                overlap_end = min(left_end, right_end)
+                if overlap_start <= overlap_end:
+                    overlaps.append(
+                        {
+                            "day": str(day),
+                            "first_class": left_label,
+                            "second_class": right_label,
+                            "overlap_start": overlap_start,
+                            "overlap_end": overlap_end,
+                        }
+                    )
+    return overlaps
+
+
+def assign_split_segment(
+    df: pd.DataFrame,
+    ratios: Mapping[str, float],
+    gap_minutes: float,
+) -> tuple[pd.Series, dict[str, int]]:
+    """Affecte les attaques par leurs segments temporels, puis BENIGN associé.
+
+    Chaque plage d’attaque est l’intervalle min/max observé de ``ts_end`` pour
+    un couple (jour, classe). Les coupures sont calculées par rang sur les flux
+    de l’attaque. Les flux BENIGN dans plusieurs plages suivent la plage qui
+    commence le plus tôt; les autres reprennent le split chronologique par jour.
+    """
+    required = {"day", "ts_end", "label_multi"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError("Colonnes requises absentes : " + ", ".join(sorted(missing)))
+    if df["label_multi"].isna().any():
+        raise ValueError(
+            f"label_multi : {int(df['label_multi'].isna().sum())} valeur(s) manquante(s)."
+        )
+    if not np.isfinite(gap_minutes) or gap_minutes < 0:
+        raise ValueError("gap_minutes doit être positif ou nul et fini.")
+    train_ratio, validation_ratio, _ = _normalize_ratios(ratios)
+    baseline, _ = assign_split(df, ratios, gap_minutes, mode="count")
+    assigned = baseline.copy()
+    gap_seconds = float(gap_minutes) * 60
+    timestamps = pd.to_numeric(df["ts_end"], errors="coerce")
+    if timestamps.isna().any() or not np.isfinite(timestamps).all():
+        raise ValueError("ts_end doit contenir uniquement des valeurs finies.")
+
+    for day, day_frame in df.groupby("day", sort=True, observed=True):
+        day_indexes = day_frame.index
+        day_starts: list[tuple[float, str, float, float, float]] = []
+        attack_frame = day_frame.loc[day_frame["label_multi"].ne("BENIGN")]
+        for class_name, class_frame in attack_frame.groupby(
+            "label_multi", sort=False, observed=True
+        ):
+            ordered = class_frame.assign(
+                _split_timestamp=timestamps.loc[class_frame.index]
+            ).sort_values("_split_timestamp", kind="stable")
+            values = ordered["_split_timestamp"].to_numpy(dtype=np.float64)
+            if not len(values):
+                continue
+            start = float(values[0])
+            end = float(values[-1])
+            t1 = _quantile_timestamp(values, train_ratio, "count")
+            t2 = _quantile_timestamp(values, train_ratio + validation_ratio, "count")
+            class_labels = _labels_from_cutpoints(values, t1, t2, gap_seconds)
+            assigned.loc[ordered.index] = class_labels
+            day_starts.append((start, str(class_name), end, t1, t2))
+
+        benign_frame = day_frame.loc[day_frame["label_multi"].eq("BENIGN")]
+        if not benign_frame.empty and day_starts:
+            benign_times = timestamps.loc[benign_frame.index].to_numpy(dtype=np.float64)
+            benign_labels = baseline.loc[benign_frame.index].to_numpy(dtype=object)
+            unassigned_benign = np.ones(len(benign_times), dtype=bool)
+            for start, class_name, end, t1, t2 in sorted(day_starts):
+                owned = (
+                    unassigned_benign
+                    & (benign_times >= start)
+                    & (benign_times <= end)
+                )
+                if not owned.any():
+                    continue
+                benign_labels[owned] = _labels_from_cutpoints(
+                    benign_times[owned],
+                    t1,
+                    t2,
+                    gap_seconds,
+                )
+                unassigned_benign[owned] = False
+            assigned.loc[benign_frame.index] = benign_labels
+
+    gaps = assigned.eq("gap")
+    lost_by_day = {
+        str(day): int(count)
+        for day, count in gaps.groupby(df["day"], sort=True, observed=True).sum().items()
+    }
+    return assigned, lost_by_day
+
+
+def _block_quotas(
+    block_count: int,
+    ratios: tuple[float, float, float],
+) -> tuple[int, int, int]:
+    exact = np.asarray(ratios, dtype=np.float64) * block_count
+    quotas = np.floor(exact).astype(int)
+    remaining = block_count - int(quotas.sum())
+    order = np.argsort(-(exact - quotas), kind="stable")
+    quotas[order[:remaining]] += 1
+    if np.any(quotas == 0):
+        raise ValueError(
+            f"Seulement {block_count} blocs disponibles pour représenter train, val et test."
+        )
+    return int(quotas[0]), int(quotas[1]), int(quotas[2])
+
+
+def _block_assignment_satisfies(
+    block_labels: np.ndarray,
+    attack_blocks: Mapping[str, set[int]],
+    split_names: tuple[str, ...],
+) -> bool:
+    for blocks in attack_blocks.values():
+        if len(blocks) < 3:
+            continue
+        if {
+            str(block_labels[block_id]) for block_id in blocks
+        } != set(split_names):
+            return False
+    return True
+
+
+def assign_split_blocks(
+    df: pd.DataFrame,
+    ratios: Mapping[str, float],
+    gap_minutes: float,
+    block_minutes: float = 10,
+    seed: int = 42,
+) -> tuple[pd.Series, dict[str, int]]:
+    """Affecte des blocs contigus de façon reproductible et stratifiée.
+
+    Pour chaque jour, les intervalles de ``block_minutes`` sont ancrés à son
+    premier ``ts_end``. Le nombre de blocs train/val/test suit les ratios par
+    méthode des plus grands restes. Avec un générateur initialisé par ``seed``,
+    une permutation aléatoire des blocs est tirée puis rejetée tant qu'une
+    classe d'attaque présente dans au moins trois blocs n'apparaît pas dans
+    chacun des trois splits. Cette contrainte s'applique aux blocs affectés,
+    avant le retrait des flux du gap. Après affectation, toute transition entre deux
+    blocs de splits différents retire les flux situés à moins de
+    ``gap_minutes`` avant ou après la frontière, en les marquant ``gap``.
+    """
+    required = {"day", "ts_end", "label_multi"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError("Colonnes requises absentes : " + ", ".join(sorted(missing)))
+    if df["label_multi"].isna().any():
+        raise ValueError(
+            f"label_multi : {int(df['label_multi'].isna().sum())} valeur(s) manquante(s)."
+        )
+    if not np.isfinite(gap_minutes) or gap_minutes < 0:
+        raise ValueError("gap_minutes doit être positif ou nul et fini.")
+    if not np.isfinite(block_minutes) or block_minutes <= 0:
+        raise ValueError("block_minutes doit être strictement positif et fini.")
+    ratios_normalized = _normalize_ratios(ratios)
+    validation_key = "validation" if "validation" in ratios else "val"
+    split_names = ("train", "val", "test")
+    timestamps = pd.to_numeric(df["ts_end"], errors="coerce")
+    if timestamps.isna().any() or not np.isfinite(timestamps).all():
+        raise ValueError("ts_end doit contenir uniquement des valeurs finies.")
+    if df["day"].isna().any():
+        raise ValueError(f"day : {int(df['day'].isna().sum())} valeur(s) manquante(s).")
+
+    assigned = pd.Series("gap", index=df.index, dtype="string", name="split")
+    gap_seconds = float(gap_minutes) * 60
+    block_seconds = float(block_minutes) * 60
+    rng = np.random.default_rng(seed)
+    for day, day_frame in df.assign(_split_timestamp=timestamps).groupby(
+        "day", sort=True, observed=True
+    ):
+        ordered = day_frame.sort_values("_split_timestamp", kind="stable")
+        values = ordered["_split_timestamp"].to_numpy(dtype=np.float64)
+        day_start = float(values[0])
+        block_ids = np.floor((values - day_start) / block_seconds).astype(np.int64)
+        block_count = int(block_ids[-1]) + 1
+        train_count, val_count, test_count = _block_quotas(
+            block_count, ratios_normalized
+        )
+        attack_blocks: dict[str, set[int]] = {}
+        ordered_labels = ordered["label_multi"].astype(str).to_numpy()
+        for class_name in pd.unique(ordered_labels):
+            if class_name == "BENIGN":
+                continue
+            class_mask = ordered_labels == class_name
+            attack_blocks[str(class_name)] = set(block_ids[class_mask].tolist())
+
+        quotas = (train_count, val_count, test_count)
+        block_labels: np.ndarray | None = None
+        final_labels: np.ndarray | None = None
+        for _ in range(_BLOCK_ASSIGNMENT_ATTEMPTS):
+            permutation = rng.permutation(block_count)
+            candidate = np.empty(block_count, dtype=object)
+            offset = 0
+            for split_name, count in zip(split_names, quotas):
+                candidate[permutation[offset : offset + count]] = split_name
+                offset += count
+            if _block_assignment_satisfies(candidate, attack_blocks, split_names):
+                block_labels = candidate
+                break
+
+        if block_labels is None:
+            constrained_count = sum(
+                len(blocks) >= 3 for blocks in attack_blocks.values()
+            )
+            raise ValueError(
+                f"Impossible de satisfaire la stratification de {day} après "
+                f"{_BLOCK_ASSIGNMENT_ATTEMPTS} essais "
+                f"({constrained_count} classe(s) contrainte(s))."
+            )
+        final_labels = block_labels[block_ids].copy()
+        boundaries = np.flatnonzero(block_labels[:-1] != block_labels[1:]) + 1
+        gap_mask = np.zeros(len(values), dtype=bool)
+        for boundary_block in boundaries:
+            boundary_time = day_start + boundary_block * block_seconds
+            first = np.searchsorted(values, boundary_time - gap_seconds, side="left")
+            last = np.searchsorted(values, boundary_time + gap_seconds, side="right")
+            gap_mask[first:last] = True
+        final_labels[gap_mask] = "gap"
+        assigned.loc[ordered.index] = final_labels
+
+    gaps_by_day = assigned.eq("gap").groupby(df["day"], sort=True, observed=True).sum()
+    return assigned, {str(day): int(count) for day, count in gaps_by_day.items()}
 
 
 def _resolution_by_day(day: str) -> float:
@@ -460,8 +726,260 @@ def run_split_diagnostics(
     return gap_report_path, report_path, table
 
 
+def _variant_class_summary(
+    frame: pd.DataFrame,
+    variant: str,
+    min_flows_per_block: int,
+    *,
+    chronological_overlap: bool,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    train_starts = (
+        frame.loc[frame["split"].eq("train")]
+        .groupby("label_multi", observed=True)["ts_end"]
+        .min()
+        .to_dict()
+    )
+    for label, class_frame in frame.groupby(
+        "label_multi", sort=True, observed=True
+    ):
+        counts = {
+            block: int(class_frame["split"].eq(block).sum()) for block in _BLOCKS
+        }
+        total = sum(counts.values())
+        exploitable = all(
+            counts[block] >= min_flows_per_block
+            for block in ("train", "val", "test")
+        )
+        test_post_train = 0
+        if chronological_overlap and label in train_starts:
+            train_minimum = float(train_starts[label])
+            test_post_train = int(
+                (
+                    class_frame["split"].eq("test")
+                    & class_frame["ts_end"].gt(train_minimum)
+                ).sum()
+            )
+        rows.append(
+            {
+                "variante": variant,
+                "classe": str(label),
+                "train": counts["train"],
+                "train_pct": 100 * counts["train"] / total if total else 0.0,
+                "val": counts["val"],
+                "val_pct": 100 * counts["val"] / total if total else 0.0,
+                "test": counts["test"],
+                "test_pct": 100 * counts["test"] / total if total else 0.0,
+                "gap": counts["gap"],
+                "gap_pct": 100 * counts["gap"] / total if total else 0.0,
+                "exploitable": exploitable,
+                "test_post_train": test_post_train,
+                "test_post_train_pct": (
+                    100 * test_post_train / counts["test"]
+                    if chronological_overlap and counts["test"]
+                    else 0.0 if chronological_overlap else None
+                ),
+            }
+        )
+    return rows
+
+
+def _render_variant_table(rows: list[dict[str, object]]) -> str:
+    headers = [
+        "Classe",
+        "Train (n, %)",
+        "Val (n, %)",
+        "Test (n, %)",
+        "Gap (n, %)",
+        "Exploitable",
+        "Test postérieur à train",
+    ]
+    lines = [
+        "| " + " | ".join(headers) + " |",
+        "|---|---:|---:|---:|---:|:---:|---:|",
+    ]
+    for row in rows:
+        overlap = (
+            f"{int(row['test_post_train'])} "
+            f"({float(row['test_post_train_pct']):.2f} %)"
+            if row["test_post_train_pct"] is not None
+            else "n/a"
+        )
+        lines.append(
+            f"| {row['classe']} "
+            f"| {int(row['train'])} ({float(row['train_pct']):.2f} %) "
+            f"| {int(row['val'])} ({float(row['val_pct']):.2f} %) "
+            f"| {int(row['test'])} ({float(row['test_pct']):.2f} %) "
+            f"| {int(row['gap'])} ({float(row['gap_pct']):.2f} %) "
+            f"| {'oui' if row['exploitable'] else 'non'} | {overlap} |"
+        )
+    return "\n".join(lines)
+
+
+def run_variant_diagnostics(
+    config: dict[str, object] | None = None,
+    *,
+    input_path: str | Path | None = None,
+    reports_dir: str | Path | None = None,
+) -> tuple[Path, Path, pd.DataFrame]:
+    """Compare V1 à 4/5 min, V2 segment et V3 blocs, sans écrire de Parquet."""
+    project_config = load_config() if config is None else config
+    paths = project_config["paths"]
+    split_config = project_config["split"]
+    variants = split_config["variants"]
+    interim = Path(paths["interim"])
+    source_path = Path(input_path) if input_path is not None else interim / "clean.parquet"
+    if reports_dir is None:
+        reports_dir = interim.resolve().parents[1] / "reports"
+    reports_path = Path(reports_dir)
+    reports_path.mkdir(parents=True, exist_ok=True)
+    if not source_path.exists():
+        raise FileNotFoundError(f"Parquet source introuvable : {source_path}.")
+
+    frame = pd.read_parquet(source_path, columns=list(_REQUIRED_INPUT_COLUMNS))
+    min_flows = int(split_config["min_flows_per_block"])
+    ratios = split_config
+    segment_gap = float(variants["segment"]["gap_minutes"])
+    block_gap = float(variants["blocks"]["gap_minutes"])
+    block_minutes = float(variants["blocks"]["block_minutes"])
+    current_gap = float(split_config["gap_minutes"])
+    overlaps = find_attack_window_overlaps(frame)
+
+    variant_definitions = (
+        (
+            "V1_gap4",
+            "V1 — assign_split, gap 4 min (référence)",
+            segment_gap,
+            False,
+        ),
+        ("V1_gap5", "V1 — assign_split, gap 5 min", current_gap, False),
+        ("V2_segment", "V2 — segments d’attaque", segment_gap, True),
+        ("V3_blocks", "V3 — blocs stratifiés", block_gap, True),
+    )
+    results: list[dict[str, object]] = []
+    summary_rows: list[dict[str, object]] = []
+    for variant, title, gap, overlap_metric in variant_definitions:
+        if variant.startswith("V1"):
+            labels, gaps_by_day = assign_split(
+                frame, ratios, gap, mode=str(split_config.get("mode", "count"))
+            )
+        elif variant == "V2_segment":
+            labels, gaps_by_day = assign_split_segment(frame, ratios, gap)
+        else:
+            labels, gaps_by_day = assign_split_blocks(
+                frame,
+                ratios,
+                gap,
+                block_minutes=block_minutes,
+                seed=int(project_config["seeds"]["split"]),
+            )
+        frame["split"] = labels
+        class_rows = _variant_class_summary(
+            frame,
+            variant,
+            min_flows,
+            chronological_overlap=overlap_metric,
+        )
+        results.extend(class_rows)
+        eligible_count = sum(bool(row["exploitable"]) for row in class_rows)
+        benign_total = int(frame["label_multi"].eq("BENIGN").sum())
+        benign_test = int(
+            (
+                frame["label_multi"].eq("BENIGN")
+                & frame["split"].eq("test")
+            ).sum()
+        )
+        summary_rows.append(
+            {
+                "variante": variant,
+                "description": title,
+                "classes_exploitables": eligible_count,
+                "classes_total": len(class_rows),
+                "flows_gap": int(frame["split"].eq("gap").sum()),
+                "benign_test": benign_test,
+                "benign_total": benign_total,
+                "benign_test_pct": (
+                    100 * benign_test / benign_total if benign_total else 0.0
+                ),
+                "gaps_by_day": gaps_by_day,
+            }
+        )
+
+    table = pd.DataFrame(results)
+    csv_path = reports_path / "split_variants.csv"
+    table.to_csv(csv_path, index=False, encoding="utf-8")
+    report_lines = [
+        "# Comparaison des variantes de split",
+        "",
+        f"- Seuil d’exploitabilité : {min_flows} flux minimum dans chacun des blocs train, val et test.",
+        "- Les effectifs et pourcentages sont calculés séparément dans chaque classe.",
+        "- Les labels multiclasse sont laissés inchangés ; aucune classe n’est regroupée.",
+        "- V1 à 4 min sert de référence pour comparer les flux perdus ; V1 à 5 min est affichée séparément.",
+        "- Pour V2/V3, « test postérieur à train » mesure les flux test dont `ts_end` est supérieur au minimum `ts_end` train de la même classe, tous jours confondus.",
+        "- V3 répartit d’abord les blocs pour couvrir les splits des classes présentes dans au moins trois blocs, puis retire les flux des gaps ; le gap peut donc éliminer les derniers flux d’une classe dans un split, ce qui est reflété dans l’exploitabilité mesurée.",
+        "",
+        "## Résumé comparatif",
+        "",
+        "| Variante | Classes exploitables | Flux gap | BENIGN dans test | Part des BENIGN en test |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for row in summary_rows:
+        report_lines.append(
+            f"| {row['description']} | {row['classes_exploitables']}/"
+            f"{row['classes_total']} | {row['flows_gap']} | "
+            f"{row['benign_test']}/{row['benign_total']} | "
+            f"{row['benign_test_pct']:.2f} % |"
+        )
+    for variant, title, _, overlap_metric in variant_definitions:
+        report_lines.extend(
+            [
+                "",
+                f"## {title}",
+                "",
+                _render_variant_table(
+                    [row for row in results if row["variante"] == variant]
+                ),
+            ]
+        )
+        if overlap_metric:
+            report_lines.extend(
+                [
+                    "",
+                    "La dernière colonne donne l’effectif et le pourcentage des flux test dont l’horodatage est postérieur à au moins un flux train de la même classe.",
+                ]
+            )
+    report_lines.extend(["", "## Chevauchements de plages V2", ""])
+    if overlaps:
+        report_lines.extend(
+            [
+                "| Jour | Première plage | Plage chevauchante | Début intersection (epoch s) | Fin intersection (epoch s) | Priorité d’affectation BENIGN |",
+                "|---|---|---|---:|---:|---|",
+            ]
+        )
+        for overlap in overlaps:
+            report_lines.append(
+                f"| {overlap['day']} | {overlap['first_class']} | "
+                f"{overlap['second_class']} | {overlap['overlap_start']:.6f} | "
+                f"{overlap['overlap_end']:.6f} | {overlap['first_class']} |"
+            )
+    else:
+        report_lines.append("Aucun chevauchement entre plages observées d’attaques.")
+    report_path = reports_path / "split_variants.md"
+    report_path.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
+
+    print("Récapitulatif des variantes :")
+    print("| Variante | Classes exploitables | Flux gap | % BENIGN en test |")
+    print("|---|---:|---:|---:|")
+    for row in summary_rows:
+        print(
+            f"| {row['variante']} | {row['classes_exploitables']}/"
+            f"{row['classes_total']} | {row['flows_gap']} | "
+            f"{row['benign_test_pct']:.2f} % |"
+        )
+    return report_path, csv_path, table
+
+
 if __name__ == "__main__":
-    gap_report, class_report, class_table = run_split_diagnostics()
-    print(f"Rapport de gap : {gap_report}")
-    print(f"Rapport de classes : {class_report}")
-    print(f"CSV des classes : {class_report.with_suffix('.csv')}")
+    report, csv_report, _ = run_variant_diagnostics()
+    print(f"Rapport comparatif : {report}")
+    print(f"CSV comparatif : {csv_report}")
