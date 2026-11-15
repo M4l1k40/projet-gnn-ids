@@ -29,6 +29,28 @@ python -m venv .venv
 ## Pipeline données
 
 Guide complet : [docs/DONNEES.md](docs/DONNEES.md).
+
+**Récupérer les données (elles ne sont pas sur GitHub).** Chacun les régénère en local :
+
+1. Télécharger `GeneratedLabelledFlows.zip` (CIC-IDS2017) et le décompresser dans
+   `data/raw/GeneratedLabelledFlows/TrafficLabelling/` (8 CSV).
+2. Lancer, dans cet ordre :
+
+```powershell
+python -m src.data.build --force
+python -m src.data.folds
+python -m src.data.p2
+python -m src.data.relabel
+python -m src.data.redundancy
+python -m src.data.verify_final
+```
+
+3. Dans le code, charger les données avec `src/data/access.py`
+   (`load_split`, `feature_names`, `multiclass_classes`, `get_fold`, `load_p2`),
+   sans chemin en dur.
+
+Chiffres de contrôle : 2 827 677 lignes dans `clean.parquet` ; train 1 515 755,
+val 151 714, test 882 784.
 Depuis la racine du dépôt sous PowerShell, la commande unique exécute nettoyage, horodatages, split final,
 normalisation et diagnostic de fuite. Les étapes dont toutes les sorties existent sont ignorées ; `--force`
 les régénère.
