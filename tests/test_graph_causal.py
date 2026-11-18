@@ -108,3 +108,15 @@ def test_model_shapes_and_encode():
 
 def test_feature_columns_follow_schema_rule():
     assert feature_columns(fake_df()) == FEATS
+
+
+def test_shuffle_keeps_causality_and_coverage():
+    g = build_graph(fake_df(), FEATS)
+    snaps = list(causal_snapshots(g, "train", step=60.0, window=300.0, shuffle=True, seed=3))
+    for snap in snaps:
+        assert_causal(snap, step=60.0)
+    seen = torch.cat([s.row_id[s.target_mask] for s in snaps])
+    assert sorted(seen.tolist()) == sorted(g.row_id[g.split_id == SPLIT_IDS["train"]].tolist())
+    chrono = [s.ts[s.target_mask].min().item() for s in causal_snapshots(g, "train", step=60.0, window=300.0)]
+    mixed = [s.ts[s.target_mask].min().item() for s in snaps]
+    assert mixed != chrono and sorted(mixed) == sorted(chrono)

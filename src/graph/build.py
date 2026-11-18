@@ -55,7 +55,7 @@ class GraphCols:
 def _ts_seconds(s: pd.Series) -> np.ndarray:
     if np.issubdtype(s.dtype, np.datetime64):
         return s.astype("int64").to_numpy() / 1e9
-    return s.to_numpy(dtype=np.float64)
+    return s.to_numpy(dtype=np.float64, copy=True)
 
 
 def make_node_ids(df: pd.DataFrame, cols: GraphCols, mode: str = "host",
@@ -91,14 +91,14 @@ def build_graph(df: pd.DataFrame, feature_cols: Sequence[str], cols: GraphCols =
     """Graphe global trié par (ts_end, flow_id). `df` contient train+val+test."""
     df = df.sort_values([cols.ts, cols.flow_id], kind="mergesort").reset_index(drop=True)
     src, dst, n_nodes = make_node_ids(df, cols, node_mode, remap_seed)
-    feats = df[list(feature_cols)].to_numpy(dtype=np.float32)
+    feats = df[list(feature_cols)].to_numpy(dtype=np.float32, copy=True)
     g = Data(
         edge_index=torch.from_numpy(np.stack([src, dst])),
         edge_attr=torch.from_numpy(feats),
         y=torch.from_numpy(df[cols.label].to_numpy(dtype=np.int64)),
         ts=torch.from_numpy(_ts_seconds(df[cols.ts])),
         split_id=torch.from_numpy(
-            df[cols.split].astype(str).map(SPLIT_IDS).to_numpy(dtype=np.int64)),
+            df[cols.split].astype(str).map(SPLIT_IDS).to_numpy(dtype=np.int64, copy=True)),
         row_id=torch.arange(len(df)),            # identifiant numérique interne
         num_nodes=n_nodes,
     )
@@ -121,14 +121,19 @@ UNIVERSE = {"train": ("train",), "val": ("train", "val"), "test": ("train", "val
 
 
 def causal_snapshots(g: Data, target_split: str, step: float = 0.0,
-                     window: float | None = None) -> Iterator[Data]:
+                     window: float | None = None, keep_prob: float = 1.0,
+                     seed: int = 0, shuffle: bool = False) -> Iterator[Data]:
     """Génère des snapshots causaux. Les flux de `target_split` sont les cibles (target_mask).
 
     step   : 0 -> un snapshot par valeur distincte de ts_end (EXACT, causal strict au sens ts<=t).
              >0 -> cibles regroupées par tranche de `step` secondes (plus rapide ; une cible peut
              voir des arêtes plus tardives de < step secondes : fuite bornée, à documenter).
     window : None -> tout le passé de l'univers ; sinon W secondes (fenêtres glissantes §5.3).
+    keep_prob : < 1 -> ne génère qu'une fraction aléatoire des snapshots (entraînement seulement ;
+                JAMAIS pour val/test, sinon des flux ne seraient pas prédits).
+    shuffle : ordre aléatoire des snapshots (entraînement seulement ; chaque snapshot reste causal).
     """
+    rng = np.random.default_rng(seed)
     univ_ids = torch.tensor([SPLIT_IDS[s] for s in UNIVERSE[target_split]])
     idx_univ = torch.isin(g.split_id, univ_ids).nonzero().squeeze(1)  # déjà trié par ts
     ts = g.ts[idx_univ].numpy()
@@ -138,7 +143,11 @@ def causal_snapshots(g: Data, target_split: str, step: float = 0.0,
         return
     key = ts[tgt_pos] if step <= 0 else np.floor(ts[tgt_pos] / step)
     groups = np.split(tgt_pos, np.flatnonzero(np.diff(key)) + 1)
-    for grp in groups:
+    order = rng.permutation(len(groups)) if shuffle else range(len(groups))
+    for gi in order:
+        grp = groups[gi]
+        if keep_prob < 1.0 and rng.random() > keep_prob:
+            continue
         t_min, t_max = ts[grp[0]], ts[grp[-1]]
         hi = int(np.searchsorted(ts, t_max, side="right"))
         lo = 0 if window is None else int(np.searchsorted(ts, t_min - window, side="left"))
