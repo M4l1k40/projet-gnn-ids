@@ -14,3 +14,5 @@ torch-geometric
 networkx
 streamlit
 plotly
+
+matplotlib

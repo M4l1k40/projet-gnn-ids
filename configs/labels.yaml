@@ -1,0 +1,51 @@
+paths:
+  raw: data/raw
+  interim: data/interim
+  clean: data/interim/clean.parquet
+  processed: data/processed
+  processed_v3: data/processed_v3
+  train: data/processed/train.parquet
+  val: data/processed/val.parquet
+  test: data/processed/test.parquet
+  audit: data/processed/label_audit.parquet
+  output: data/processed/labels_v2.parquet
+  output_all: data/processed/labels_v2_all.parquet
+  report: reports/labels_v2.md
+
+label_rule_to_multi:
+  BENIGN: BENIGN # Repli de l'audit hors des fenêtres d'attaque explicites.
+  Botnet: Bot # Correspondance des règles Botnet vers le nom de classe du jeu.
+  Botnet - Attempted: Bot # Tentatives Botnet; le suffixe ne change pas la classe canonique.
+  DDoS: DDoS # Règle DDoS.
+  DDoS - Attempted: DDoS # Tentatives DDoS.
+  DoS GoldenEye: DoS GoldenEye # Règle GoldenEye.
+  DoS GoldenEye - Attempted: DoS GoldenEye # Tentatives GoldenEye.
+  DoS Hulk: DoS Hulk # Règle Hulk.
+  DoS Hulk - Attempted: DoS Hulk # Tentatives Hulk.
+  DoS Slowhttptest: DoS Slowhttptest # Règle Slowhttptest.
+  DoS Slowhttptest - Attempted: DoS Slowhttptest # Tentatives Slowhttptest.
+  DoS Slowloris: DoS slowloris # Conserve la casse de la classe d'origine.
+  DoS Slowloris - Attempted: DoS slowloris # Tentatives Slowloris.
+  FTP-Patator: FTP-Patator # Règle FTP-Patator.
+  FTP-Patator - Attempted: FTP-Patator # Tentatives FTP-Patator.
+  Heartbleed: Heartbleed # Règle Heartbleed.
+  Heartbleed - Attempted: Heartbleed # Tentatives Heartbleed.
+  Infiltration: Infiltration # Règle Infiltration.
+  Infiltration - Attempted: Infiltration # Tentatives Infiltration.
+  Infiltration - Portscan: PortScan # Sondage du jeudi, canonisé vers PortScan.
+  Portscan: PortScan # Règle Portscan du vendredi, canonisée vers PortScan.
+  SSH-Patator: SSH-Patator # Règle SSH-Patator.
+  SSH-Patator - Attempted: SSH-Patator # Tentatives SSH-Patator.
+  Web Attack - Brute Force: Web Attack - Brute Force # Règle Brute Force.
+  Web Attack - Brute Force - Attempted: Web Attack - Brute Force # Tentatives Brute Force.
+  Web Attack - SQL Injection: Web Attack - Sql Injection # Conserve la casse de la classe d'origine.
+  Web Attack - SQL Injection - Attempted: Web Attack - Sql Injection # Tentatives SQL Injection.
+  Web Attack - XSS: Web Attack - XSS # Règle XSS.
+  Web Attack - XSS - Attempted: Web Attack - XSS # Tentatives XSS.
+
+families:
+  portscan_infiltration_rule: Infiltration - Portscan
+  server_response:
+    source_ip: 192.168.10.50
+    destination_ip: 172.16.0.1
+    ftp_source_port: 21
