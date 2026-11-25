@@ -22,6 +22,22 @@ paths:
   summary_csv_v3: reports/xgboost_v3_metrics.csv
   recall_csv_v3: reports/xgboost_v3_recall.csv
   progress_report_v3: reports/xgboost_v3_progress.md
+  p2_fold_mapping: data/processed/p2_folds.parquet
+  p2_scaler_dir: models/p2
+  model_dir_p2: models/xgboost_p2
+  prediction_dir_p2: predictions/xgboost_p2
+  report_dir_p2: reports/xgboost_p2
+  summary_report_p2: reports/xgboost_p2.md
+  metrics_csv_p2: reports/xgboost_p2_metrics.csv
+  recall_csv_p2: reports/xgboost_p2_class_recall.csv
+  comparison_csv_p2: reports/xgboost_p2_comparison.csv
+  shap_report_v3: reports/xgboost_v3_shap.md
+  shap_global_csv_v3: reports/xgboost_v3_shap_global.csv
+  shap_class_csv_v3: reports/xgboost_v3_shap_by_class.csv
+  shap_direction_csv_v3: reports/xgboost_v3_shap_direction.csv
+  shap_gain_csv_v3: reports/xgboost_v3_shap_gain_comparison.csv
+  shap_figure_dir: reports/figures
+  m4_synthesis_report: reports/m4_xgboost_synthese.md
 
 data_variant: v2
 seeds: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
@@ -32,6 +48,30 @@ search_folds: [0, 1, 2]
 multiclass_blocks: [train, test]
 undersampling_benign_train: false
 benign_to_attack_ratio: 1.0
+
+p2:
+  seed: 42
+  n_estimators: 199
+  folds:
+    - day_Tuesday
+    - day_Wednesday
+    - day_Thursday
+    - day_Friday
+    - family_bruteforce
+    - family_dos
+    - family_web
+    - family_recon
+    - family_bot
+  threshold:
+    method: validation_benign_fpr
+    target_fpr: 0.01
+
+shap_v3:
+  seed: 42
+  attack_sample_per_class: 1500
+  benign_sample: 15000
+  cross_check_rows: 200
+  dependence_max_rows: 5000
 
 fixed:
   booster: gbtree
