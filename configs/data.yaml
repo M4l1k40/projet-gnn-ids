@@ -2,6 +2,12 @@ paths:
   raw: data/raw
   interim: data/interim
   processed: data/processed
+  processed_v3: data/processed_v3
+  feature_list: models/features.json
+  scaler_v3: models/scaler_v3.joblib
+  attack_windows: configs/attack_windows.yaml
+  split_v3_report: reports/split_v3.md
+  normalization_v3_report: reports/normalization_v3.md
 
 split:
   train: 0.60
@@ -20,6 +26,7 @@ split:
     variant: segment
     gap_minutes: 3
     min_flows_per_block: 50
+    benign_ownership: class_range
 
 normalization:
   method: standard
