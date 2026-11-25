@@ -1,0 +1,19 @@
+{
+  "mode": "bin",
+  "xgboost_version": "3.4.1",
+  "trial": {
+    "max_depth": 5,
+    "min_child_weight": 3.6332706385123137,
+    "subsample": 0.893439167964553,
+    "colsample_bytree": 0.748684014529682,
+    "lambda": 0.021255242200368056,
+    "alpha": 4.9361370716315225
+  },
+  "fold": 0,
+  "score": 0.8961505391160762,
+  "best_iteration": 4,
+  "rounds_trained": 105,
+  "fit_seconds": 51.431535699999586,
+  "estimated_final_fit_seconds": 4.21577373962574,
+  "estimated_ten_seeds_seconds": 42.157737396257396
+}
