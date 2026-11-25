@@ -1,0 +1,5 @@
+distance_band,sample_count,positive_support,recall_xgboost,false_positives_xgboost
+distance nulle,7358,3216,0.9993781094527363,15
+0 < distance ≤ p25,546,128,1.0,0
+p25–p75,15722,5485,0.9112123974475843,44
+> p75,7875,2672,0.9857784431137725,19
