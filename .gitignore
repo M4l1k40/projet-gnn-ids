@@ -22,3 +22,5 @@ models/xgboost/
 models/xgboost_v3/
 predictions/
 reports/xgboost_v3/*seed*
+
+models/xgboost_p2/

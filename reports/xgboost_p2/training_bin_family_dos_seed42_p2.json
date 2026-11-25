@@ -1,0 +1,28 @@
+{
+  "pli": "family_dos",
+  "seed": 42,
+  "n_estimators": 199,
+  "hyperparameters": {
+    "max_depth": 11,
+    "min_child_weight": 1.8671451331962814,
+    "subsample": 0.5913611870890207,
+    "colsample_bytree": 0.6938222860888561,
+    "lambda": 0.0391897449266567,
+    "alpha": 3.294464426704278
+  },
+  "scale_pos_weight": 12.366901282399201,
+  "train_rows": 2315027,
+  "val_rows": 75454,
+  "train_classes": [
+    "BENIGN",
+    "Bot",
+    "FTP-Patator",
+    "PortScan",
+    "SSH-Patator",
+    "Web Attack - Brute Force",
+    "Web Attack - Sql Injection",
+    "Web Attack - XSS"
+  ],
+  "fit_seconds": 166.072075700009,
+  "feature_count": 69
+}
