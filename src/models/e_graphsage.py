@@ -1,4 +1,4 @@
-"""M1 : E-GraphSAGE (Lo et al., 2022) en PyG.
+"""M1 : E-GraphSAGE (Lo et al., 2022) en PyG, avec variantes de tête pour l'expérience E3.
 
 Paper : K=2, 128 unités, ReLU, dropout 0.2 entre les couches, agrégation moyenne,
 x_v = vecteur de 1 (dim = nb de features d'arête), z_uv = concat(z_u, z_v), softmax.
@@ -8,8 +8,13 @@ Deux modes d'agrégation (point à noter dans la fiche de synthèse : l'éq. 4 d
  - "node_edge" (défaut) : message = ReLU(W_m [h_u ; e_uv]) -> la 2e couche voit bien 2 sauts.
  - "edge_only"          : message = e_uv, lecture littérale de l'éq. 4 -> la 2e couche
                           n'apporte pas d'information à 2 sauts. A comparer en ablation.
-Les arêtes sont utilisées dans les deux sens pour la propagation (un nœud agrège ses flux
-entrants ET sortants).
+Les arêtes sont utilisées dans les deux sens pour la propagation.
+
+Têtes de classification (`head`) pour isoler l'apport du graphe (E3) :
+ - "linear"   (défaut, article) : Linear(emb)               -> embeddings de graphe seuls
+ - "mlp_feat" (extension)       : MLP([emb ; features flux]) -> graphe + flux
+ - "mlp_only" (référence)       : MLP(features flux)         -> AUCUN graphe
+L'apport du graphe = mlp_feat contre mlp_only (même MLP). "linear" n'est pas comparable à ces deux-là.
 """
 from __future__ import annotations
 
@@ -42,13 +47,22 @@ class EdgeSAGEConv(MessagePassing):
 
 
 class EGraphSAGE(nn.Module):
+    HEADS = ("linear", "mlp_feat", "mlp_only")
+
     def __init__(self, edge_dim: int, hidden: int = 128, n_classes: int = 2,
-                 dropout: float = 0.2, mode: str = "node_edge"):
+                 dropout: float = 0.2, mode: str = "node_edge", head: str = "linear"):
         super().__init__()
-        self.conv1 = EdgeSAGEConv(edge_dim, edge_dim, hidden, mode)
-        self.conv2 = EdgeSAGEConv(hidden, edge_dim, hidden, mode)
-        self.head = nn.Linear(2 * hidden, n_classes)
-        self.dropout = dropout
+        assert head in self.HEADS, head
+        self.edge_dim, self.hidden, self.dropout, self.head_kind = edge_dim, hidden, dropout, head
+        self.emb_dim = 2 * hidden
+        if head != "mlp_only":
+            self.conv1 = EdgeSAGEConv(edge_dim, edge_dim, hidden, mode)
+            self.conv2 = EdgeSAGEConv(hidden, edge_dim, hidden, mode)
+        if head == "linear":
+            self.head = nn.Linear(2 * hidden, n_classes)
+        else:
+            d_in = edge_dim + (2 * hidden if head == "mlp_feat" else 0)
+            self.head = nn.Sequential(nn.Linear(d_in, hidden), nn.ReLU(), nn.Linear(hidden, n_classes))
 
     def _edge_embed(self, data) -> torch.Tensor:
         ei = torch.cat([data.edge_index, data.edge_index.flip(0)], dim=1)
@@ -61,11 +75,18 @@ class EGraphSAGE(nn.Module):
 
     def forward(self, data) -> torch.Tensor:
         """Logits par flux (appliquer le masque `data.target_mask` pour la perte / les prédictions)."""
-        return self.head(self._edge_embed(data))
+        if self.head_kind == "mlp_only":
+            return self.head(data.edge_attr)
+        z = self._edge_embed(data)
+        if self.head_kind == "mlp_feat":
+            z = torch.cat([z, data.edge_attr], dim=-1)
+        return self.head(z)
 
     @torch.no_grad()
     def encode(self, data) -> torch.Tensor:
-        """Interface pour M3 : embeddings par flux [E, 2*hidden] (mode eval)."""
+        """Interface pour M3 : embeddings de graphe par flux [E, 2*hidden] (mode eval)."""
+        if self.head_kind == "mlp_only":
+            raise NotImplementedError("la variante mlp_only n'a pas d'embedding de graphe")
         was_training = self.training
         self.eval()
         out = self._edge_embed(data)

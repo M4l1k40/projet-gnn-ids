@@ -33,20 +33,27 @@ from src.models.e_graphsage import EGraphSAGE
 
 
 def load_encoder(weights: str | Path, device: str = "cpu") -> EGraphSAGE:
-    """Recharge un modèle sauvegardé (hyperparamètres déduits des poids), en mode eval."""
+    """Recharge un modèle sauvegardé (hyperparamètres et tête déduits des poids), en mode eval."""
     sd = torch.load(weights, map_location=device, weights_only=True)
-    hidden = sd["conv1.upd.weight"].shape[0]
+    if "head.weight" in sd:                       # tête linéaire de l'article
+        head, n_classes = "linear", sd["head.weight"].shape[0]
+    else:                                         # tête MLP (extensions E3)
+        head = "mlp_feat" if "conv1.upd.weight" in sd else "mlp_only"
+        n_classes = sd["head.2.weight"].shape[0]
     mode = "node_edge" if "conv1.msg.weight" in sd else "edge_only"
-    key = "conv1.msg.weight" if mode == "node_edge" else "conv1.upd.weight"
-    edge_dim = sd[key].shape[1] // 2
-    model = EGraphSAGE(edge_dim=edge_dim, hidden=hidden, n_classes=sd["head.weight"].shape[0], mode=mode)
+    if head == "mlp_only":
+        hidden, edge_dim = sd["head.0.weight"].shape
+    else:
+        hidden = sd["conv1.upd.weight"].shape[0]
+        key = "conv1.msg.weight" if mode == "node_edge" else "conv1.upd.weight"
+        edge_dim = sd[key].shape[1] // 2
+    model = EGraphSAGE(edge_dim=int(edge_dim), hidden=int(hidden), n_classes=int(n_classes), mode=mode, head=head)
     model.load_state_dict(sd)
     return model.to(device).eval()
 
 
 def edge_dim(model: EGraphSAGE) -> int:
-    conv = model.conv1
-    return (conv.msg.in_features if hasattr(conv, "msg") else conv.upd.in_features) // 2
+    return model.edge_dim
 
 
 def encode_split(model: EGraphSAGE, g, split: str, step: float = 15.0, window: float | None = 60.0,
@@ -56,7 +63,7 @@ def encode_split(model: EGraphSAGE, g, split: str, step: float = 15.0, window: f
         raise ValueError(f"le graphe a {g.num_edge_features} features, le modèle en attend "
                          f"{edge_dim(model)} : même liste et même ordre que l'entraînement (feature_names()).")
     n = int((g.split_id == SPLIT_IDS[split]).sum())
-    emb = np.empty((n, model.head.in_features), dtype=dtype)
+    emb = np.empty((n, model.emb_dim), dtype=dtype)
     ids = np.empty(n, dtype=object)
     pos = 0
     for snap in causal_snapshots(g, split, step, window):

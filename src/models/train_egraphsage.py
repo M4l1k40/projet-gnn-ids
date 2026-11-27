@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
-from sklearn.metrics import average_precision_score, f1_score, recall_score, roc_auc_score
+from sklearn.metrics import average_precision_score, f1_score, recall_score, roc_auc_score, roc_curve
 
 from src.graph.build import build_graph, causal_snapshots, feature_columns, target_flow_ids
 from src.models.e_graphsage import EGraphSAGE
@@ -79,6 +79,12 @@ def predict(model, g, split, step, window):
     return np.concatenate(ids), np.concatenate(ys), np.concatenate(ps)
 
 
+def tpr_at(y, p, fpr_max: float) -> float:
+    """TPR maximal pour un FPR <= fpr_max (métrique opérationnelle, comme M4)."""
+    fpr, tpr, _ = roc_curve(y, p)
+    return float(tpr[fpr <= fpr_max].max())
+
+
 def val_score(y, p) -> float:
     return average_precision_score(y, p) if len(np.unique(y)) == 2 else -float("inf")
 
@@ -86,7 +92,7 @@ def val_score(y, p) -> float:
 def train_one_seed(g, seed, args, weights):
     torch.manual_seed(seed)
     np.random.seed(seed)
-    model = EGraphSAGE(edge_dim=g.num_edge_features, n_classes=2, mode=args.mode)
+    model = EGraphSAGE(edge_dim=g.num_edge_features, n_classes=2, mode=args.mode, head=args.head)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)
     best, best_state, bad = -float("inf"), None, 0
     for epoch in range(args.epochs):
@@ -141,6 +147,9 @@ def main():
     ap.add_argument("--shuffle", action=argparse.BooleanOptionalAction, default=True,
                     help="ordre aléatoire des snapshots d'entraînement (--no-shuffle = chronologique)")
     ap.add_argument("--mode", choices=["node_edge", "edge_only"], default="node_edge")
+    ap.add_argument("--head", choices=["linear", "mlp_feat", "mlp_only"], default="linear",
+                    help="tête : linear (article) | mlp_feat (flux + graphe) | mlp_only (flux, sans graphe)")
+    ap.add_argument("--tag", default="e_graphsage", help="préfixe des fichiers de sortie (poids, prédictions)")
     ap.add_argument("--node-mode", choices=["host", "ip_port"], default="host")
     ap.add_argument("--out", default="data/predictions")
     args = ap.parse_args()
@@ -162,21 +171,21 @@ def main():
     Path("models").mkdir(exist_ok=True)
     for seed in args.seeds:
         model, best = train_one_seed(g, seed, args, weights)
-        torch.save(model.state_dict(), f"models/e_graphsage_seed{seed}.pt")
+        torch.save(model.state_dict(), f"models/{args.tag}_seed{seed}.pt")
         ids, y, p = predict(model, g, "test", args.step, args.window)
         pred = (p >= 0.5).astype(np.int8)
         pd.DataFrame({
             "flow_id": ids, "y_true": y.astype(np.int8), "y_pred": pred,
             "score": p.astype(np.float32), "recon_error": np.float32("nan"),
             "seed": np.int32(seed),
-        }).to_parquet(out / f"e_graphsage_seed{seed}.parquet", index=False)
+        }).to_parquet(out / f"{args.tag}_seed{seed}.parquet", index=False)
         fp = int(((pred == 1) & (y == 0)).sum())
         tn = int(((pred == 0) & (y == 0)).sum())
         print(f"== seed {seed} TEST (seuil 0.5) : F1 {f1_score(y, pred, zero_division=0):.4f}  "
               f"recall {recall_score(y, pred, zero_division=0):.4f}  FPR {fp / max(fp + tn, 1):.4f}  "
               f"(PR-AUC val {best:.4f})", flush=True)
         print(f"   test complet : taux d'attaques {y.mean():.3f}  PR-AUC {average_precision_score(y, p):.4f}  "
-              f"ROC-AUC {roc_auc_score(y, p):.4f}", flush=True)
+              f"ROC-AUC {roc_auc_score(y, p):.4f}  TPR@FPR1% {tpr_at(y, p, 0.01):.4f}", flush=True)
         if args.source == "real":  # test strict : sans jumeau dans le train (leakage_report)
             from src.data.access import load_split, strict_test_mask
 
@@ -186,7 +195,8 @@ def main():
             sd = pd.DataFrame({"flow_id": ids.astype(str), "y": y, "p": p}).merge(t, on="flow_id")
             sd = sd[sd["strict"]]
             print(f"   test strict  : taux d'attaques {sd.y.mean():.3f}  PR-AUC "
-                  f"{average_precision_score(sd.y, sd.p):.4f}  ROC-AUC {roc_auc_score(sd.y, sd.p):.4f}",
+                  f"{average_precision_score(sd.y, sd.p):.4f}  ROC-AUC {roc_auc_score(sd.y, sd.p):.4f}  "
+                  f"TPR@FPR1% {tpr_at(sd.y, sd.p, 0.01):.4f}",
                   flush=True)
 
 
