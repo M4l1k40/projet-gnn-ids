@@ -76,6 +76,8 @@ def normalize_final_data(
     *,
     processed_dir: str | Path | None = None,
     models_dir: str | Path | None = None,
+    scaler_path: str | Path | None = None,
+    write_features: bool = True,
     report_path: str | Path | None = None,
     batch_size: int = _BATCH_SIZE,
 ) -> tuple[Path, Path, Path, dict[str, Any]]:
@@ -96,6 +98,11 @@ def normalize_final_data(
     )
     project_root = Path(__file__).resolve().parents[2]
     model_dir = Path(models_dir) if models_dir is not None else project_root / "models"
+    scaler_output = (
+        Path(scaler_path) if scaler_path is not None else model_dir / "scaler.joblib"
+    )
+    if scaler_path is not None and scaler_output.exists():
+        raise FileExistsError(f"Refus d’écraser le scaler existant : {scaler_output}.")
     report_file = (
         Path(report_path)
         if report_path is not None
@@ -193,14 +200,16 @@ def normalize_final_data(
             staged_scaler = staged_model_dir / "scaler.joblib"
             staged_features = staged_model_dir / "features.json"
             joblib.dump(scaler, staged_scaler)
-            staged_features.write_text(
-                json.dumps(features, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
+            if write_features:
+                staged_features.write_text(
+                    json.dumps(features, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                )
             for split in _SPLITS:
                 staged_paths[split].replace(source_paths[split])
-            staged_scaler.replace(model_dir / "scaler.joblib")
-            staged_features.replace(model_dir / "features.json")
+            staged_scaler.replace(scaler_output)
+            if write_features:
+                staged_features.replace(model_dir / "features.json")
 
     report_lines = [
         "# Rapport de normalisation",
@@ -227,13 +236,13 @@ def normalize_final_data(
     report_file.parent.mkdir(parents=True, exist_ok=True)
     report_file.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
 
-    scaler_path = model_dir / "scaler.joblib"
     features_path = model_dir / "features.json"
     print(
         f"Scaler ajusté sur {train_rows} lignes train ; "
         f"{len(features)} features, {len(zero_variance)} à variance nulle."
     )
-    print(f"Scaler : {scaler_path}")
-    print(f"Features : {features_path}")
+    print(f"Scaler : {scaler_output}")
+    if write_features:
+        print(f"Features : {features_path}")
     print(f"Rapport : {report_file}")
-    return scaler_path, features_path, report_file, dataset_moments
+    return scaler_output, features_path, report_file, dataset_moments

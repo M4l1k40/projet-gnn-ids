@@ -1,0 +1,28 @@
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed_v3
+  processed_v3: data/processed_v3
+  processed_v2: data/processed
+  meta_v3: data/processed_v3/meta.parquet
+  meta_v2: data/processed/meta.parquet
+  feature_list: models/features.json
+  scaler_v3: models/scaler_v3.joblib
+  scaler_v2: models/scaler.joblib
+  xgb_v3_prediction_dir: predictions/xgboost_v3
+  xgb_v3_threshold: reports/xgboost_v3/thresholds_bin_v3_b0.json
+  xgb_v2_prediction_dir: predictions/xgboost
+  xgb_v2_threshold: reports/xgboost/thresholds_bin.json
+  report_v3: reports/leakage_report_v3.md
+  class_csv_v3: reports/leakage_v3_by_class.csv
+  distance_band_csv_v3: reports/leakage_v3_distance_bands.csv
+  report_v2: reports/leakage_report_v2.md
+  class_csv_v2: reports/leakage_v2_by_class.csv
+  distance_band_csv_v2: reports/leakage_v2_distance_bands.csv
+
+seed: 42
+benign_sample: 20000
+attack_sample_per_class: 2000
+workers: 4
+query_batch_size: 1000
+benchmark_queries: 500

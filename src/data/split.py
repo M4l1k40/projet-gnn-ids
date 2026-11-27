@@ -167,6 +167,10 @@ def assign_split_segment(
     df: pd.DataFrame,
     ratios: Mapping[str, float],
     gap_minutes: float,
+    *,
+    benign_ownership: str = "class_range",
+    official_windows: Mapping[str, Mapping[str, list[list[str]]]] | None = None,
+    tolerance_minutes: float = 0.0,
 ) -> tuple[pd.Series, dict[str, int]]:
     """Affecte les attaques par leurs segments temporels, puis BENIGN associé.
 
@@ -174,6 +178,8 @@ def assign_split_segment(
     un couple (jour, classe). Les coupures sont calculées par rang sur les flux
     de l’attaque. Les flux BENIGN dans plusieurs plages suivent la plage qui
     commence le plus tôt; les autres reprennent le split chronologique par jour.
+    ``official_window`` remplace uniquement l’intervalle de propriété BENIGN
+    par les fenêtres officielles étendues de leur tolérance.
     """
     required = {"day", "ts_end", "label_multi"}
     missing = required - set(df.columns)
@@ -185,6 +191,16 @@ def assign_split_segment(
         )
     if not np.isfinite(gap_minutes) or gap_minutes < 0:
         raise ValueError("gap_minutes doit être positif ou nul et fini.")
+    if benign_ownership not in {"class_range", "official_window"}:
+        raise ValueError(
+            "benign_ownership doit être 'class_range' ou 'official_window'."
+        )
+    if not np.isfinite(tolerance_minutes) or tolerance_minutes < 0:
+        raise ValueError("tolerance_minutes doit être positif ou nul et fini.")
+    if benign_ownership == "official_window" and official_windows is None:
+        raise ValueError(
+            "official_windows est requis pour benign_ownership='official_window'."
+        )
     train_ratio, validation_ratio, _ = _normalize_ratios(ratios)
     baseline, _ = assign_split(df, ratios, gap_minutes, mode="count")
     assigned = baseline.copy()
@@ -196,6 +212,7 @@ def assign_split_segment(
     for day, day_frame in df.groupby("day", sort=True, observed=True):
         day_indexes = day_frame.index
         day_starts: list[tuple[float, str, float, float, float]] = []
+        class_cutpoints: dict[str, tuple[float, float]] = {}
         attack_frame = day_frame.loc[day_frame["label_multi"].ne("BENIGN")]
         for class_name, class_frame in attack_frame.groupby(
             "label_multi", sort=False, observed=True
@@ -213,13 +230,71 @@ def assign_split_segment(
             class_labels = _labels_from_cutpoints(values, t1, t2, gap_seconds)
             assigned.loc[ordered.index] = class_labels
             day_starts.append((start, str(class_name), end, t1, t2))
+            class_cutpoints[str(class_name).casefold()] = (t1, t2)
 
         benign_frame = day_frame.loc[day_frame["label_multi"].eq("BENIGN")]
         if not benign_frame.empty and day_starts:
             benign_times = timestamps.loc[benign_frame.index].to_numpy(dtype=np.float64)
             benign_labels = baseline.loc[benign_frame.index].to_numpy(dtype=object)
             unassigned_benign = np.ones(len(benign_times), dtype=bool)
-            for start, class_name, end, t1, t2 in sorted(day_starts):
+            if benign_ownership == "class_range":
+                ownership_windows = [
+                    (start, class_name, end, t1, t2)
+                    for start, class_name, end, t1, t2 in day_starts
+                ]
+            else:
+                configured_windows = official_windows.get(str(day), {})
+                if not isinstance(configured_windows, Mapping):
+                    raise ValueError(
+                        f"Fenêtres officielles invalides pour le jour {day}."
+                    )
+                first_timestamp = float(timestamps.loc[day_indexes].iloc[0])
+                day_start = pd.Timestamp(
+                    pd.to_datetime(first_timestamp, unit="s").date()
+                ).value / 1_000_000_000
+                tolerance_seconds = float(tolerance_minutes) * 60
+                ownership_windows = []
+                for class_name, spans in configured_windows.items():
+                    cutpoints = class_cutpoints.get(str(class_name).casefold())
+                    if cutpoints is None:
+                        continue
+                    if not isinstance(spans, list) or not spans:
+                        raise ValueError(
+                            f"Fenêtres officielles invalides pour {day}/{class_name}."
+                        )
+                    t1, t2 = cutpoints
+                    for span in spans:
+                        if (
+                            not isinstance(span, list)
+                            or len(span) != 2
+                            or any(not isinstance(value, str) for value in span)
+                        ):
+                            raise ValueError(
+                                f"Fenêtre officielle invalide pour {day}/{class_name}."
+                            )
+                        try:
+                            start_hour, start_minute = map(int, span[0].split(":"))
+                            end_hour, end_minute = map(int, span[1].split(":"))
+                        except ValueError as error:
+                            raise ValueError(
+                                f"Heure officielle invalide pour {day}/{class_name}."
+                            ) from error
+                        start = (
+                            day_start
+                            + start_hour * 3600
+                            + start_minute * 60
+                            - tolerance_seconds
+                        )
+                        end = (
+                            day_start
+                            + end_hour * 3600
+                            + end_minute * 60
+                            + tolerance_seconds
+                        )
+                        ownership_windows.append(
+                            (start, str(class_name), end, t1, t2)
+                        )
+            for start, class_name, end, t1, t2 in sorted(ownership_windows):
                 owned = (
                     unassigned_benign
                     & (benign_times >= start)

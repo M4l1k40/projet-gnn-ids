@@ -1,0 +1,11 @@
+{
+  "pli": "family_web",
+  "seed": 42,
+  "n_estimators": 199,
+  "method": "validation_benign_fpr",
+  "target_fpr": 0.01,
+  "threshold": 0.004890821408480406,
+  "achieved_fpr": 0.009970062719280422,
+  "validation_rows": 75475,
+  "validation_benign_rows": 73821
+}

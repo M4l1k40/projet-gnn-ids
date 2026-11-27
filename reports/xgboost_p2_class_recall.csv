@@ -1,0 +1,57 @@
+pli,evaluation,label_orig_multi,support,metric,value,present_in_train
+day_Tuesday,labels origine,BENIGN,431809,specificity,0.9810008591761635,True
+day_Tuesday,labels origine,FTP-Patator,7935,recall,0.13056080655324512,False
+day_Tuesday,labels origine,SSH-Patator,5897,recall,0.473969815160251,False
+day_Tuesday,v2 Attempted comptés,BENIGN,430209,specificity,0.9810008591761635,True
+day_Tuesday,v2 Attempted comptés,FTP-Patator,7934,recall,0.1304512225863373,False
+day_Tuesday,v2 Attempted comptés,SSH-Patator,5897,recall,0.473969815160251,False
+day_Wednesday,labels origine,BENIGN,439668,specificity,0.9896649289918756,True
+day_Wednesday,labels origine,DoS GoldenEye,10293,recall,0.6388807927717867,False
+day_Wednesday,labels origine,DoS Hulk,230123,recall,0.4328598184449186,False
+day_Wednesday,labels origine,DoS Slowhttptest,5499,recall,0.22531369339879978,False
+day_Wednesday,labels origine,DoS slowloris,5796,recall,0.38250517598343686,False
+day_Wednesday,v2 Attempted comptés,BENIGN,432882,specificity,0.9896649289918756,True
+day_Wednesday,v2 Attempted comptés,DoS GoldenEye,10293,recall,0.6388807927717867,False
+day_Wednesday,v2 Attempted comptés,DoS Hulk,230123,recall,0.4328598184449186,False
+day_Wednesday,v2 Attempted comptés,DoS Slowhttptest,5499,recall,0.22531369339879978,False
+day_Wednesday,v2 Attempted comptés,DoS slowloris,5790,recall,0.38255613126079446,False
+day_Thursday,labels origine,BENIGN,456267,specificity,0.8528821939785257,True
+day_Thursday,labels origine,Web Attack - Brute Force,1507,recall,0.9044459190444591,False
+day_Thursday,labels origine,Web Attack - Sql Injection,21,recall,0.9523809523809523,False
+day_Thursday,labels origine,Web Attack - XSS,652,recall,0.941717791411043,False
+day_Thursday,v2 Attempted comptés,BENIGN,388926,specificity,0.8528821939785257,True
+day_Thursday,v2 Attempted comptés,Web Attack - Brute Force,1507,recall,0.9044459190444591,False
+day_Thursday,v2 Attempted comptés,Web Attack - Sql Injection,21,recall,0.9523809523809523,False
+day_Thursday,v2 Attempted comptés,Web Attack - XSS,652,recall,0.941717791411043,False
+day_Friday,labels origine,BENIGN,413928,specificity,0.97969695212694,True
+day_Friday,labels origine,Bot,1956,recall,0.0,False
+day_Friday,labels origine,DDoS,128025,recall,0.635743018941613,False
+day_Friday,labels origine,PortScan,158804,recall,0.005824790307548928,False
+day_Friday,v2 Attempted comptés,BENIGN,381592,specificity,0.97969695212694,True
+day_Friday,v2 Attempted comptés,Bot,1952,recall,0.0,False
+day_Friday,v2 Attempted comptés,DDoS,128025,recall,0.635743018941613,False
+day_Friday,v2 Attempted comptés,PortScan,158790,recall,0.005743434725108634,False
+family_bruteforce,labels origine,FTP-Patator,7935,recall,0.2205419029615627,False
+family_bruteforce,labels origine,SSH-Patator,5897,recall,0.464134305579108,False
+family_bruteforce,v2 Attempted comptés,FTP-Patator,7934,recall,0.22044366019662212,False
+family_bruteforce,v2 Attempted comptés,SSH-Patator,5897,recall,0.464134305579108,False
+family_dos,labels origine,DDoS,128025,recall,0.4814450302675259,False
+family_dos,labels origine,DoS GoldenEye,10293,recall,0.5402700864665306,False
+family_dos,labels origine,DoS Hulk,230123,recall,0.2551287789573402,False
+family_dos,labels origine,DoS Slowhttptest,5499,recall,0.09456264775413711,False
+family_dos,labels origine,DoS slowloris,5796,recall,0.3688750862663906,False
+family_dos,v2 Attempted comptés,DDoS,128025,recall,0.4814450302675259,False
+family_dos,v2 Attempted comptés,DoS GoldenEye,10293,recall,0.5402700864665306,False
+family_dos,v2 Attempted comptés,DoS Hulk,230123,recall,0.2551287789573402,False
+family_dos,v2 Attempted comptés,DoS Slowhttptest,5499,recall,0.09456264775413711,False
+family_dos,v2 Attempted comptés,DoS slowloris,5790,recall,0.3690846286701209,False
+family_web,labels origine,Web Attack - Brute Force,1507,recall,0.9037823490378235,False
+family_web,labels origine,Web Attack - Sql Injection,21,recall,1.0,False
+family_web,labels origine,Web Attack - XSS,652,recall,0.9447852760736196,False
+family_web,v2 Attempted comptés,Web Attack - Brute Force,1507,recall,0.9037823490378235,False
+family_web,v2 Attempted comptés,Web Attack - Sql Injection,21,recall,1.0,False
+family_web,v2 Attempted comptés,Web Attack - XSS,652,recall,0.9447852760736196,False
+family_recon,labels origine,PortScan,158804,recall,0.006252991108536309,False
+family_recon,v2 Attempted comptés,PortScan,158790,recall,0.006177970904968827,False
+family_bot,labels origine,Bot,1956,recall,0.004601226993865031,False
+family_bot,v2 Attempted comptés,Bot,1952,recall,0.004610655737704918,False
