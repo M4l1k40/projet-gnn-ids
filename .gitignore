@@ -16,5 +16,16 @@ __pycache__/
 .venv/
 *.parquet
 *.joblib
+<<<<<<< HEAD
 logs/
 models/*.pt
+=======
+
+# XGBoost : modèles, prédictions et logs par graine (régénérables)
+models/xgboost/
+models/xgboost_v3/
+predictions/
+reports/xgboost_v3/*seed*
+
+models/xgboost_p2/
+>>>>>>> upstream/main

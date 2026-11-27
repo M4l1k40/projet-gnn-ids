@@ -1,0 +1,32 @@
+{
+  "pli": "family_bot",
+  "seed": 42,
+  "n_estimators": 199,
+  "hyperparameters": {
+    "max_depth": 11,
+    "min_child_weight": 1.8671451331962814,
+    "subsample": 0.5913611870890207,
+    "colsample_bytree": 0.6938222860888561,
+    "lambda": 0.0391897449266567,
+    "alpha": 3.294464426704278
+  },
+  "scale_pos_weight": 3.8965639571163218,
+  "train_rows": 2691509,
+  "val_rows": 75475,
+  "train_classes": [
+    "BENIGN",
+    "DDoS",
+    "DoS GoldenEye",
+    "DoS Hulk",
+    "DoS Slowhttptest",
+    "DoS slowloris",
+    "FTP-Patator",
+    "PortScan",
+    "SSH-Patator",
+    "Web Attack - Brute Force",
+    "Web Attack - Sql Injection",
+    "Web Attack - XSS"
+  ],
+  "fit_seconds": 195.20754889998352,
+  "feature_count": 69
+}

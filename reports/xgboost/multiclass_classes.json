@@ -1,0 +1,165 @@
+{
+  "minimum_per_block": 50,
+  "blocks": [
+    "train",
+    "test"
+  ],
+  "multiclass_classes": [
+    "BENIGN",
+    "Bot",
+    "DDoS",
+    "DoS Hulk",
+    "DoS Slowhttptest",
+    "DoS slowloris",
+    "FTP-Patator",
+    "PortScan",
+    "SSH-Patator",
+    "Web Attack - Brute Force",
+    "Web Attack - XSS"
+  ],
+  "multiclass_classes_train_val_test": [
+    "BENIGN",
+    "Bot",
+    "DoS slowloris",
+    "FTP-Patator",
+    "SSH-Patator",
+    "Web Attack - Brute Force"
+  ],
+  "excluded_classes": [
+    {
+      "label": "DoS GoldenEye",
+      "counts": {
+        "train": 6176,
+        "test": 0
+      }
+    },
+    {
+      "label": "Heartbleed",
+      "counts": {
+        "train": 7,
+        "test": 0
+      }
+    },
+    {
+      "label": "Infiltration",
+      "counts": {
+        "train": 22,
+        "test": 9
+      }
+    },
+    {
+      "label": "Web Attack - Sql Injection",
+      "counts": {
+        "train": 13,
+        "test": 0
+      }
+    }
+  ],
+  "excluded_classes_train_val_test": [
+    {
+      "label": "DDoS",
+      "counts": {
+        "train": 76815,
+        "val": 0,
+        "test": 12501
+      }
+    },
+    {
+      "label": "DoS GoldenEye",
+      "counts": {
+        "train": 6176,
+        "val": 0,
+        "test": 0
+      }
+    },
+    {
+      "label": "DoS Hulk",
+      "counts": {
+        "train": 138074,
+        "val": 0,
+        "test": 14152
+      }
+    },
+    {
+      "label": "DoS Slowhttptest",
+      "counts": {
+        "train": 3300,
+        "val": 0,
+        "test": 1205
+      }
+    },
+    {
+      "label": "Heartbleed",
+      "counts": {
+        "train": 7,
+        "val": 1,
+        "test": 0
+      }
+    },
+    {
+      "label": "Infiltration",
+      "counts": {
+        "train": 22,
+        "val": 4,
+        "test": 9
+      }
+    },
+    {
+      "label": "PortScan",
+      "counts": {
+        "train": 95698,
+        "val": 0,
+        "test": 20046
+      }
+    },
+    {
+      "label": "Web Attack - Sql Injection",
+      "counts": {
+        "train": 13,
+        "val": 0,
+        "test": 0
+      }
+    },
+    {
+      "label": "Web Attack - XSS",
+      "counts": {
+        "train": 392,
+        "val": 3,
+        "test": 66
+      }
+    }
+  ],
+  "counts_by_block": {
+    "train": {
+      "BENIGN": 1181398,
+      "FTP-Patator": 4764,
+      "SSH-Patator": 3539,
+      "DoS slowloris": 3478,
+      "DoS Slowhttptest": 3300,
+      "DoS Hulk": 138074,
+      "DoS GoldenEye": 6176,
+      "Heartbleed": 7,
+      "Web Attack - Brute Force": 905,
+      "Web Attack - XSS": 392,
+      "Web Attack - Sql Injection": 13,
+      "Infiltration": 22,
+      "Bot": 1174,
+      "PortScan": 95698,
+      "DDoS": 76815
+    },
+    "test": {
+      "BENIGN": 830584,
+      "FTP-Patator": 1579,
+      "SSH-Patator": 1192,
+      "DoS slowloris": 714,
+      "DoS Slowhttptest": 1205,
+      "DoS Hulk": 14152,
+      "Web Attack - Brute Force": 260,
+      "Web Attack - XSS": 66,
+      "Infiltration": 9,
+      "Bot": 476,
+      "PortScan": 20046,
+      "DDoS": 12501
+    }
+  }
+}
