@@ -1,5 +1,3 @@
-data/
-!data/
 data/*
 !data/raw/
 !data/interim/
@@ -17,10 +15,13 @@ __pycache__/
 *.parquet
 *.joblib
 
-# XGBoost : modèles, prédictions et logs par graine (régénérables)
+# Graphe (M1) : logs et poids PyTorch
+logs/
+models/*.pt
+
+# XGBoost : modÃ¨les, prÃ©dictions et logs par graine (rÃ©gÃ©nÃ©rables)
 models/xgboost/
 models/xgboost_v3/
+models/xgboost_p2/
 predictions/
 reports/xgboost_v3/*seed*
-
-models/xgboost_p2/
