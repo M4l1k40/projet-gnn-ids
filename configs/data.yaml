@@ -3,6 +3,11 @@ paths:
   interim: data/interim
   processed: data/processed
   processed_v3: data/processed_v3
+  processed_v3_logz: data/processed_v3_logz
+  scaler_v3_logz: models/scaler_v3_logz.joblib
+  p2_folds_source: data/processed/p2_folds.parquet
+  scaler_audit_v3: reports/scaler_audit/feature_audit_v3.csv
+  normalization_v3_logz_report: reports/normalization_v3_logz.md
   feature_list: models/features.json
   scaler_v3: models/scaler_v3.joblib
   attack_windows: configs/attack_windows.yaml
@@ -30,6 +35,34 @@ split:
 
 normalization:
   method: standard
+
+normalization_logz:
+  batch_size: 50000
+  sample_size: 200000
+  sample_seed: 42
+  invalid_negative_features:
+    - Flow Duration
+    - Flow Bytes/s
+    - Flow Packets/s
+    - Flow IAT Mean
+    - Flow IAT Std
+    - Flow IAT Max
+    - Flow IAT Min
+    - Fwd IAT Total
+    - Fwd IAT Mean
+    - Fwd IAT Std
+    - Fwd IAT Max
+    - Fwd IAT Min
+    - Bwd IAT Total
+    - Bwd IAT Mean
+    - Bwd IAT Std
+    - Bwd IAT Max
+    - Bwd IAT Min
+    - Fwd Packets/s
+    - Bwd Packets/s
+    - Fwd Header Length
+    - Bwd Header Length
+    - min_seg_size_forward
 
 leakage:
   test_sample: 50000

@@ -20,6 +20,8 @@ __pycache__/
 # XGBoost : modèles, prédictions et logs par graine (régénérables)
 models/xgboost/
 models/xgboost_v3/
+models/xgboost_v3_logz/
+models/rf_v3_logz/
 predictions/
 reports/xgboost_v3/*seed*
 
