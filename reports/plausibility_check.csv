@@ -1,0 +1,178 @@
+﻿section,metric,feature,day,label_multi,count,denominator,share_pct,detail,recommendation
+plausibility,flow_duration_le_0,,TOTAL,TOUTES,115,2827677,0.00406694,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,TOUS,BENIGN,115,2271122,0.00506358,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Monday,TOUTES,15,529450,0.00283313,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Tuesday,TOUTES,17,445641,0.00381473,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Wednesday,TOUTES,21,691390,0.00303736,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Thursday,TOUTES,15,458483,0.00327166,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Friday,TOUTES,47,702713,0.00668836,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Monday,BENIGN,15,529450,0.00283313,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Tuesday,BENIGN,17,431809,0.00393693,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Wednesday,BENIGN,21,439668,0.00477633,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Thursday,BENIGN,15,456267,0.00328755,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_le_0,,Friday,BENIGN,47,413928,0.01135463,,Inspecter ces valeurs non physiques; corriger à la source ou exclure après audit.
+plausibility,flow_duration_gt_120s,,TOTAL,TOUTES,0,2827677,0.00000000,,Documenter la configuration CICFlowMeter et vérifier le découpage/timeout avant toute exclusion.
+plausibility,zero_packets_positive_bytes,,TOTAL,TOUTES,0,2827677,0.00000000,,Incohérence physique: corriger à la source ou exclure après audit.
+plausibility,max_packet_gt_1500,,TOTAL,TOUTES,466146,2827677,16.48512189,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,BENIGN,221963,2271122,9.77327506,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,DoS Slowhttptest,437,5499,7.94689944,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,DoS slowloris,4,5796,0.06901311,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,DoS Hulk,154852,230123,67.29097048,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,DoS GoldenEye,7356,10293,71.46604488,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,Heartbleed,11,11,100.00000000,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,Web Attack - Brute Force,6,1507,0.39814200,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,Web Attack - XSS,23,652,3.52760736,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,Web Attack - Sql Injection,10,21,47.61904762,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,Bot,52,1956,2.65848671,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,PortScan,86,158804,0.05415481,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,TOUS,DDoS,81346,128025,63.53915251,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Monday,TOUTES,47550,529450,8.98101804,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Tuesday,TOUTES,44276,445641,9.93535155,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Wednesday,TOUTES,206450,691390,29.86013683,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Thursday,TOUTES,37087,458483,8.08906764,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Friday,TOUTES,130783,702713,18.61115420,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Monday,BENIGN,47550,529450,8.98101804,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Tuesday,BENIGN,44276,431809,10.25360750,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Wednesday,BENIGN,43790,439668,9.95978784,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Wednesday,DoS slowloris,4,5796,0.06901311,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Wednesday,DoS Slowhttptest,437,5499,7.94689944,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Wednesday,DoS Hulk,154852,230123,67.29097048,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Wednesday,DoS GoldenEye,7356,10293,71.46604488,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Wednesday,Heartbleed,11,11,100.00000000,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Thursday,BENIGN,37048,456267,8.11980704,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Thursday,Web Attack - Brute Force,6,1507,0.39814200,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Thursday,Web Attack - XSS,23,652,3.52760736,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Thursday,Web Attack - Sql Injection,10,21,47.61904762,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Friday,BENIGN,49299,413928,11.91004233,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Friday,Bot,52,1956,2.65848671,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Friday,PortScan,86,158804,0.05415481,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_1500,,Friday,DDoS,81346,128025,63.53915251,,Documenter jumbo frames/encapsulation; ne pas retirer automatiquement.
+plausibility,max_packet_gt_65535,,TOTAL,TOUTES,0,2827677,0.00000000,,"Valeur non plausible pour une longueur IP; vérifier conversion/calcul, puis corriger ou retirer."
+plausibility,min_packet_gt_max_packet,,TOTAL,TOUTES,0,2827677,0.00000000,,Incohérence de calcul: corriger ou retirer après vérification.
+plausibility,syn_and_fewer_than_3_packets,,TOTAL,TOUTES,57936,2827677,2.04889031,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,TOUS,BENIGN,55317,2271122,2.43566836,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,TOUS,FTP-Patator,1491,7935,18.79017013,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,TOUS,SSH-Patator,2,5897,0.03391555,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,TOUS,DoS Slowhttptest,604,5499,10.98381524,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,TOUS,DoS slowloris,522,5796,9.00621118,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Monday,TOUTES,20314,529450,3.83681179,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Tuesday,TOUTES,12534,445641,2.81257784,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Wednesday,TOUTES,11653,691390,1.68544526,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Thursday,TOUTES,6496,458483,1.41684643,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Friday,TOUTES,6939,702713,0.98745861,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Monday,BENIGN,20314,529450,3.83681179,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Tuesday,BENIGN,11041,431809,2.55691753,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Tuesday,FTP-Patator,1491,7935,18.79017013,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Tuesday,SSH-Patator,2,5897,0.03391555,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Wednesday,BENIGN,10527,439668,2.39430661,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Wednesday,DoS slowloris,522,5796,9.00621118,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Wednesday,DoS Slowhttptest,604,5499,10.98381524,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Thursday,BENIGN,6496,456267,1.42372777,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+plausibility,syn_and_fewer_than_3_packets,,Friday,BENIGN,6939,413928,1.67637850,,Documenter comme flux incomplet/scan possible; conserver si cohérent avec le scénario.
+negative_values,negative_count,Flow Duration,TOTAL,TOUTES,115,2827677,0.00406694,"range=[-13,-1]; equal_-1=109","-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow Duration,Monday,BENIGN,15,529450,0.00283313,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow Duration,Tuesday,BENIGN,17,431809,0.00393693,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow Duration,Wednesday,BENIGN,21,439668,0.00477633,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow Duration,Thursday,BENIGN,15,456267,0.00328755,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow Duration,Friday,BENIGN,47,413928,0.01135463,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow Bytes/s,TOTAL,TOUTES,85,2827677,0.00300600,"range=[-261000000,-461538.469]; equal_-1=0",Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Bytes/s,Monday,BENIGN,9,529450,0.00169988,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Bytes/s,Wednesday,BENIGN,16,439668,0.00363911,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Bytes/s,Thursday,BENIGN,14,456267,0.00306838,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Bytes/s,Friday,BENIGN,46,413928,0.01111304,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Packets/s,TOTAL,TOUTES,115,2827677,0.00406694,"range=[-2000000,-153846.156]; equal_-1=0",Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Packets/s,Monday,BENIGN,15,529450,0.00283313,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Packets/s,Tuesday,BENIGN,17,431809,0.00393693,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Packets/s,Wednesday,BENIGN,21,439668,0.00477633,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Packets/s,Thursday,BENIGN,15,456267,0.00328755,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow Packets/s,Friday,BENIGN,47,413928,0.01135463,,Valeurs négatives dérivées de durées négatives; corriger la durée/source et recalculer ces taux.
+negative_values,negative_count,Flow IAT Mean,TOTAL,TOUTES,115,2827677,0.00406694,"range=[-13,-1]; equal_-1=109","-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Mean,Monday,BENIGN,15,529450,0.00283313,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Mean,Tuesday,BENIGN,17,431809,0.00393693,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Mean,Wednesday,BENIGN,21,439668,0.00477633,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Mean,Thursday,BENIGN,15,456267,0.00328755,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Mean,Friday,BENIGN,47,413928,0.01135463,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Max,TOTAL,TOUTES,115,2827677,0.00406694,"range=[-13,-1]; equal_-1=109","-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Max,Monday,BENIGN,15,529450,0.00283313,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Max,Tuesday,BENIGN,17,431809,0.00393693,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Max,Wednesday,BENIGN,21,439668,0.00477633,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Max,Thursday,BENIGN,15,456267,0.00328755,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Max,Friday,BENIGN,47,413928,0.01135463,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,TOTAL,TOUTES,2890,2827677,0.10220404,"range=[-14,-1]; equal_-1=2753","-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Monday,BENIGN,512,529450,0.09670413,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Tuesday,BENIGN,498,431809,0.11532877,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Tuesday,FTP-Patator,4,7935,0.05040958,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Tuesday,SSH-Patator,2,5897,0.03391555,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Wednesday,BENIGN,581,439668,0.13214516,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Wednesday,DoS Hulk,159,230123,0.06909348,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Wednesday,DoS GoldenEye,5,10293,0.04857670,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Wednesday,Heartbleed,4,11,36.36363636,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Thursday,BENIGN,615,456267,0.13478950,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Thursday,Infiltration,1,36,2.77777778,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Friday,BENIGN,490,413928,0.11837808,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Flow IAT Min,Friday,DDoS,19,128025,0.01484085,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Fwd IAT Min,TOTAL,TOUTES,17,2827677,0.00060120,"range=[-12,-1]; equal_-1=15","-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Fwd IAT Min,Wednesday,DoS Hulk,8,230123,0.00347640,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Fwd IAT Min,Wednesday,DoS GoldenEye,3,10293,0.02914602,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Fwd IAT Min,Friday,DDoS,6,128025,0.00468658,,"-1 peut être un marqueur d’absence selon la feature, mais les autres valeurs négatives ne sont pas des mesures plausibles; vérifier la source et documenter."
+negative_values,negative_count,Fwd Header Length,TOTAL,TOUTES,35,2827677,0.00123777,"range=[-3.22122342e+10,-11]; equal_-1=0","Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,Fwd Header Length,Monday,BENIGN,23,529450,0.00434413,,"Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,Fwd Header Length,Tuesday,BENIGN,11,431809,0.00254742,,"Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,Fwd Header Length,Wednesday,BENIGN,1,439668,0.00022744,,"Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,Bwd Header Length,TOTAL,TOUTES,22,2827677,0.00077802,"range=[-1.07374131e+09,-83885008]; equal_-1=0","Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,Bwd Header Length,Monday,BENIGN,17,529450,0.00321088,,"Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,Bwd Header Length,Tuesday,BENIGN,5,431809,0.00115792,,"Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,Init_Win_bytes_forward,TOTAL,TOUTES,1001172,2827677,35.40616556,"range=[-1,-1]; equal_-1=1001172","-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_forward,Monday,BENIGN,224482,529450,42.39909340,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_forward,Tuesday,BENIGN,200128,431809,46.34641705,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_forward,Wednesday,BENIGN,203252,439668,46.22851788,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_forward,Thursday,BENIGN,184341,456267,40.40200146,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_forward,Friday,BENIGN,188962,413928,45.65093446,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_forward,Friday,PortScan,7,158804,0.00440795,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,TOTAL,TOUTES,1439475,2827677,50.90662760,"range=[-1,-1]; equal_-1=1439475","-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Monday,BENIGN,298839,529450,56.44329021,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Tuesday,BENIGN,254921,431809,59.03559213,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Tuesday,FTP-Patator,1492,7935,18.80277253,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Tuesday,SSH-Patator,12,5897,0.20349330,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Wednesday,BENIGN,260854,439668,59.32976701,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Wednesday,DoS slowloris,1642,5796,28.32988268,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Wednesday,DoS Slowhttptest,3172,5499,57.68321513,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Wednesday,DoS Hulk,66110,230123,28.72811496,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Wednesday,DoS GoldenEye,2579,10293,25.05586321,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Thursday,BENIGN,266319,456267,58.36911282,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Thursday,Web Attack - XSS,17,652,2.60736196,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Thursday,Infiltration,3,36,8.33333333,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Friday,BENIGN,236923,413928,57.23773217,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Friday,PortScan,64,158804,0.04030125,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,Init_Win_bytes_backward,Friday,DDoS,46528,128025,36.34290178,,"-1 est une sentinelle CICFlowMeter possible (champ non disponible/non applicable); confirmer et documenter, sans suppression globale."
+negative_values,negative_count,min_seg_size_forward,TOTAL,TOUTES,35,2827677,0.00123777,"range=[-536870656,-1]; equal_-1=1","Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,min_seg_size_forward,Monday,BENIGN,23,529450,0.00434413,,"Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,min_seg_size_forward,Tuesday,BENIGN,11,431809,0.00254742,,"Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+negative_values,negative_count,min_seg_size_forward,Wednesday,BENIGN,1,439668,0.00022744,,"Valeurs fortement négatives incompatibles avec une longueur/taille; suspecter conversion/signe ou corruption, corriger ou retirer après audit."
+quasi_zero_variance,dominant_value,Fwd URG Flags,TOTAL,TOUTES,2827499,2827677,99.99370508,value=0,Envisager de retirer seulement après validation du rôle et de l’impact sur les classes rares.
+quasi_zero_variance,dominant_value,RST Flag Count,TOTAL,TOUTES,2826991,2827677,99.97573980,value=0,Envisager de retirer seulement après validation du rôle et de l’impact sur les classes rares.
+quasi_zero_variance,dominant_value,CWE Flag Count,TOTAL,TOUTES,2827499,2827677,99.99370508,value=0,Envisager de retirer seulement après validation du rôle et de l’impact sur les classes rares.
+quasi_zero_variance,dominant_value,ECE Flag Count,TOTAL,TOUTES,2826988,2827677,99.97563371,value=0,Envisager de retirer seulement après validation du rôle et de l’impact sur les classes rares.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,BENIGN,1975,2273097,0.08688587,before=2273097; after=2271122; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,Bot,10,1966,0.50864700,before=1966; after=1956; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,DDoS,2,128027,0.00156217,before=128027; after=128025; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,DoS GoldenEye,0,10293,0.00000000,before=10293; after=10293; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,DoS Hulk,950,231073,0.41112549,before=231073; after=230123; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,DoS Slowhttptest,0,5499,0.00000000,before=5499; after=5499; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,DoS slowloris,0,5796,0.00000000,before=5796; after=5796; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,FTP-Patator,3,7938,0.03779289,before=7938; after=7935; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,Heartbleed,0,11,0.00000000,before=11; after=11; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,Infiltration,0,36,0.00000000,before=36; after=36; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,PortScan,126,158930,0.07928019,before=158930; after=158804; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,SSH-Patator,0,5897,0.00000000,before=5897; after=5897; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,Web Attack - Brute Force,0,1507,0.00000000,before=1507; after=1507; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,Web Attack - Sql Injection,0,21,0.00000000,before=21; after=21; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,class_delta_all_cleaning,,ALL_DAYS,Web Attack - XSS,0,652,0.00000000,before=652; after=652; includes inf/NaN and duplicates; not inf-only,Ce delta inclut inf/NaN et doublons; ne pas l’attribuer aux seules lignes non finies.
+cleaning_loss,source_file_step5,,,,34,,,Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv; inf_rows=34; nan_only=0; duplicates=2,"Comptage disponible par fichier seulement, pas par classe."
+cleaning_loss,source_file_step5,,,,371,,,Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv; inf_rows=371; nan_only=0; duplicates=1,"Comptage disponible par fichier seulement, pas par classe."
+cleaning_loss,source_file_step5,,,,122,,,Friday-WorkingHours-Morning.pcap_ISCX.csv; inf_rows=122; nan_only=0; duplicates=2,"Comptage disponible par fichier seulement, pas par classe."
+cleaning_loss,source_file_step5,,,,437,,,Monday-WorkingHours.pcap_ISCX.csv; inf_rows=437; nan_only=0; duplicates=31,"Comptage disponible par fichier seulement, pas par classe."
+cleaning_loss,source_file_step5,,,,207,,,Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv; inf_rows=207; nan_only=0; duplicates=142,"Comptage disponible par fichier seulement, pas par classe."
+cleaning_loss,source_file_step5,,,,135,,,Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv; inf_rows=135; nan_only=0; duplicates=1,"Comptage disponible par fichier seulement, pas par classe."
+cleaning_loss,source_file_step5,,,,264,,,Tuesday-WorkingHours.pcap_ISCX.csv; inf_rows=264; nan_only=0; duplicates=4,"Comptage disponible par fichier seulement, pas par classe."
+cleaning_loss,source_file_step5,,,,1297,,,Wednesday-workingHours.pcap_ISCX.csv; inf_rows=1297; nan_only=0; duplicates=16,"Comptage disponible par fichier seulement, pas par classe."
