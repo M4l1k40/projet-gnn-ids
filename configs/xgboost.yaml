@@ -38,6 +38,13 @@ paths:
   shap_gain_csv_v3: reports/xgboost_v3_shap_gain_comparison.csv
   shap_figure_dir: reports/figures
   m4_synthesis_report: reports/m4_xgboost_synthese.md
+  model_dir_v3_logz: models/xgboost_v3_logz
+  prediction_dir_v3_logz: predictions/xgboost_v3_logz
+  report_dir_v3_logz: reports/xgboost_v3_logz
+  logz_metrics_csv: reports/xgboost_v3_logz/model_comparison.csv
+  logz_report: reports/normalization_v3_logz.md
+  logz_xgb_threshold: reports/xgboost_v3/thresholds_bin_v3_b0.json
+  logz_xgb_reference_prediction_dir: predictions/xgboost_v3
 
 data_variant: v2
 seeds: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]

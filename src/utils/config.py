@@ -24,10 +24,24 @@ def load_config(config_path: str | Path | None = None) -> dict[str, Any]:
         raise ValueError(f"Expected a 'paths' mapping in {path}")
 
     project_root = path.parent.parent
-    for name in ("raw", "interim", "processed"):
+    required_paths = {"raw", "interim", "processed"}
+    for name in (
+        "raw",
+        "interim",
+        "processed",
+        "processed_v3",
+        "processed_v3_logz",
+        "scaler_v3_logz",
+        "p2_folds_source",
+        "scaler_audit_v3",
+        "normalization_v3_logz_report",
+        "feature_list",
+    ):
         configured_path = paths.get(name)
         if not isinstance(configured_path, str) or not configured_path:
-            raise ValueError(f"Expected a non-empty 'paths.{name}' value in {path}")
+            if name in required_paths:
+                raise ValueError(f"Expected a non-empty 'paths.{name}' value in {path}")
+            continue
         data_path = Path(configured_path)
         paths[name] = (
             data_path if data_path.is_absolute() else project_root / data_path

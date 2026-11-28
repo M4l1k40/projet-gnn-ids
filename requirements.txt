@@ -9,6 +9,7 @@ matplotlib
 pyyaml
 pytest
 joblib
+cloudpickle
 torch
 torch-geometric
 networkx

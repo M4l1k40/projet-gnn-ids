@@ -1,27 +1,38 @@
+
+# Data: ignore generated files, keep directory structure
 data/*
 !data/raw/
 !data/interim/
 !data/processed/
+
 data/raw/*
 data/interim/*
 data/processed/*
+
 !data/raw/.gitkeep
 !data/interim/.gitkeep
 !data/processed/.gitkeep
 
+# Python
 __pycache__/
 *.py[cod]
 .venv/
+
+# Generated data and models
 *.parquet
 *.joblib
-
-# Graphe (M1) : logs et poids PyTorch
-logs/
 models/*.pt
 
-# XGBoost : modèles, prédictions et logs par graine (régénérables)
+# PyTorch: graph (M1)
+logs/
+
+# XGBoost: models, predictions and regenerable logs
 models/xgboost/
 models/xgboost_v3/
+models/xgboost_v3_logz/
+models/rf_v3_logz/
 models/xgboost_p2/
+
+# Predictions and reports
 predictions/
 reports/xgboost_v3/*seed*

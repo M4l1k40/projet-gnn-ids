@@ -1,0 +1,56 @@
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+  processed_v3: data/processed_v3
+  labels_v2_all: data/processed/labels_v2_all.parquet
+  feature_list: models/features.json
+  data_config: configs/data.yaml
+  labels_config: configs/labels.yaml
+  model_dir: models/rf_v3
+  prediction_dir: predictions/rf_v3
+  report_dir: reports/rf_v3
+  model_dir_v3: models/rf_v3
+  prediction_dir_v3: predictions/rf_v3
+  report_dir_v3: reports/rf_v3
+  search_csv: reports/rf_v3/search_rf.csv
+  rf_metrics_csv: reports/rf_v3/rf_v3_metrics.csv
+  rf_recall_csv: reports/rf_v3/rf_v3_recall.csv
+  comparison_csv: reports/rf_v3/rf_vs_xgb_v3.csv
+  summary_report_rf: reports/rf_v3.md
+  rf_threshold_file: reports/rf_v3/thresholds_bin_b0_rf_selected.json
+  xgb_v3_report_dir: reports/xgboost_v3
+  xgb_v3_prediction_dir: predictions/xgboost_v3
+  xgb_v3_report: reports/xgboost_v3.md
+  xgb_v3_metrics_csv: reports/xgboost_v3_metrics.csv
+  model_dir_v3_logz: models/rf_v3_logz
+  prediction_dir_v3_logz: predictions/xgboost_v3_logz
+  logz_rf_threshold: reports/rf_v3/thresholds_bin_b0_rf_selected.json
+  logz_rf_reference_prediction_dir: predictions/rf_v3
+
+data_variant: v3
+seeds: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
+cv_folds: 5
+target_fpr: 0.01
+search:
+  folds: [0, 1, 2]
+  tie_margin: 0.004
+  configurations:
+    - {max_samples: 0.3, min_samples_leaf: 5}
+    - {max_samples: 0.5, min_samples_leaf: 5}
+    - {max_samples: 0.3, min_samples_leaf: 1}
+    - {max_samples: 0.5, min_samples_leaf: 1}
+
+model:
+  n_estimators: 100
+  max_features: sqrt
+  max_samples: 0.3
+  min_samples_leaf: 5
+  class_weight: balanced_subsample
+  bootstrap: true
+  n_jobs: -1
+  compression: 3
+
+benchmark:
+  fold: 0
+  seed: 42
