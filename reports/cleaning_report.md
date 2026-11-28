@@ -1,7 +1,7 @@
 # Rapport de nettoyage CIC-IDS2017
 
 - Fichiers traités : 8
-- Fichier Parquet : `data\interim\clean_raw.parquet`
+- Fichier Parquet : `data/interim/clean_raw.parquet`
 - Nombre final de lignes : 2827677
 - Nombre final de features : 69
 
